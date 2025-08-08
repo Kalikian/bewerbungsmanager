@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["src", "drizzle.config.mjs"],
+  "include": ["src", "src/types", "drizzle.config.mjs"],
   "exclude": ["node_modules"]
 }
