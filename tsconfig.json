@@ -8,8 +8,9 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": ["node"],
+    "allowJs": true
   },
-  "include": ["src", "src/types", "drizzle.config.mjs"],
+  "include": ["src", "src/types", "drizzle.config.js"],
   "exclude": ["node_modules"]
 }

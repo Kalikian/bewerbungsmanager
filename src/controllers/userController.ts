@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import * as userModel from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
-import { authenticateToken } from '../middleware/authenticateToken.js';
 
 //Use SECRET_KEY from environment variables, or fallback to a default string if not set
 const SECRET_KEY = process.env.SECRET_KEY || 'your_fallback_secret';
@@ -18,7 +17,7 @@ export async function registerUser(req: Request, res: Response) {
   }
 }
 
-//login user
+//login user and generate JWT token
 export async function loginUser(req: Request, res: Response) {
   try {
     const { email, password } = req.body;
@@ -34,7 +33,7 @@ export async function loginUser(req: Request, res: Response) {
   }
 }
 
-//get user profile by id
+//get user profile by id (protected route)
 export async function getUserProfile(req: Request, res: Response) {
   try {
     // ID aus Authentifizierungsmiddleware
@@ -46,7 +45,7 @@ export async function getUserProfile(req: Request, res: Response) {
   }
 }
 
-//update user name
+//Update user's first and/or last name (protected route)
 export async function updateUserName(req: Request, res: Response) {
   try {
     const userId = req.user?.id ?? Number(req.params.id);
@@ -61,7 +60,7 @@ export async function updateUserName(req: Request, res: Response) {
   }
 }
 
-//change user password
+//change user password (protected route)
 export async function changeUserPassword(req: Request, res: Response) {
   try {
     const userId = req.user?.id ?? Number(req.params.id);
@@ -76,7 +75,7 @@ export async function changeUserPassword(req: Request, res: Response) {
   }
 }
 
-//delete user account
+//delete user account (protected route)
 export async function deleteUserProfile(req: Request, res: Response) {
   try {
     const userId = req.user?.id ?? Number(req.params.id);

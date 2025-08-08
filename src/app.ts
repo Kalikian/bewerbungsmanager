@@ -1,22 +1,14 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
-
-const swaggerSpec = swaggerJsdoc({
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Bewerbungsmanager API',
-      version: '1.0.0',
-    },
-  },
-  apis: ['./src/routes/*.ts'],
-});
+import swaggerSpec from '../src/swagger.js';
+import userRoutes from './routes/userRoutes.js';
 
 const app = express();
 
 app.use(express.json());
+//Swagger-UI unter /api/docs erreichbar
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/user', userRoutes);
 
 app.get('/', (_req, res) => {
   res.send('Willkommen beim Bewerbungsmanager!');
