@@ -1,35 +1,7 @@
 import pool from '../db/db.js';
 import bcrypt from 'bcrypt';
 import { mapUserDbRow } from '../utils/mappers.js';
-
-export interface NewUser {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-export interface LoginUser {
-  email: string;
-  password: string;
-}
-export interface UserDB {
-  id: number;
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  // Add more fields if needed
-}
-export interface UpdateUserName {
-  id: number;
-  firstName?: string;
-  lastName?: string;
-}
-export interface ChangePasswordData {
-  id: number;
-  oldPassword: string;
-  newPassword: string;
-}
+import { NewUser, UserDB, LoginUser, UpdateUserName, ChangePasswordData } from '../types/user.js';
 
 //register new user
 export async function registerUser(user: NewUser): Promise<number> {
