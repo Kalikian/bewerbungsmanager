@@ -1,5 +1,5 @@
-import pool from '../db/db.js';
-import { NewApplication, Application, UpdateApplication } from '../types/application.js';
+import pool from '../../db/db.js';
+import { NewApplication, Application, UpdateApplication } from '../../types/application.js';
 
 // Creates a new job application in the database
 export async function createApplication(application: NewApplication) {
@@ -50,35 +50,45 @@ export async function getApplications(userId: number): Promise<Application[]> {
 }
 
 // Dynamically build the SET clause depending on provided fields
-export async function updateApplication(update: UpdateApplication): Promise<Application | null> {
+export async function updateApplication(
+  update: UpdateApplication,
+  userId: number,
+): Promise<Application | null> {
   const { id, ...fields } = update;
 
-  // Remove undefined fields
+  // never allow changing user_id
+  if ('user_id' in fields) {
+    delete (fields as any).user_id;
+  }
+
+  // remove undefined fields
   const keys = Object.keys(fields).filter(
     (key) => fields[key as keyof typeof fields] !== undefined,
   );
 
   if (keys.length === 0) {
-    // Nothing to update
+    // nothing to update
     return null;
   }
 
-  // Build the SET part of the query
-  const setClause = keys.map((key, idx) => `"${key}" = $${idx + 2}`).join(', ');
-  const values: (string | number | Date | null)[] = keys.map(
-    (key) => fields[key as keyof typeof fields] ?? null, // fallback für undefined
-  );
-  values.unshift(id); // Add the ID as the first value for WHERE clause
+  // build SET clause; note placeholders start at $3 because $1=id, $2=userId
+  const setClause = keys.map((key, idx) => `"${key}" = $${idx + 3}`).join(', ');
+
+  const values: (string | number | Date | null)[] = keys.map((key) => (fields as any)[key] ?? null);
+
+  // first two placeholders are reserved for id and userId
+  values.unshift(userId);
+  values.unshift(id);
 
   const query = `
     UPDATE application
     SET ${setClause}
-    WHERE id = $1
+    WHERE id = $1 AND user_id = $2
     RETURNING *;
   `;
 
   const { rows } = await pool.query(query, values);
-  return rows[0] || null;
+  return rows[0] || null; // null => not found or not owned
 }
 
 export async function deleteApplication(id: number, userId: number): Promise<boolean> {
