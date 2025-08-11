@@ -15,6 +15,13 @@
       "when": 1754399524670,
       "tag": "0001_fresh_jackpot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754932054557,
+      "tag": "0002_0003_attachment_final",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,14 @@
-import { pgTable, serial, varchar, integer, text, timestamp, date } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  varchar,
+  integer,
+  text,
+  timestamp,
+  date,
+  bigint,
+  index,
+} from 'drizzle-orm/pg-core';
 
 // User-Tabelle
 export const user = pgTable('user', {
@@ -42,12 +52,21 @@ export const note = pgTable('note', {
   updated_at: timestamp('updated_at'), // nullable (wird beim Editieren gefüllt)
 });
 
-// Attachment-Tabelle
+// Attachment-Tabelle (final)
 export const attachment = pgTable('attachment', {
   id: serial('id').primaryKey(),
-  application_id: integer('application_id').references(() => application.id),
-  file_name: varchar('file_name', { length: 255 }),
-  url: varchar('url', { length: 512 }),
+  application_id: integer('application_id')
+    .references(() => application.id, { onDelete: 'cascade' })
+    .notNull(),
+  filename_original: text('filename_original').notNull(),
+  mime_type: text('mime_type').notNull(),
+  size_bytes: bigint('size_bytes', { mode: 'number' }).notNull(),
+  storage_key: text('storage_key').notNull(),
+  checksum_sha256: text('checksum_sha256').notNull(),
+  uploaded_at: timestamp('uploaded_at', { withTimezone: true, mode: 'date' })
+    .defaultNow()
+    .notNull(),
+  deleted_at: timestamp('deleted_at', { withTimezone: true, mode: 'date' }),
 });
 
 // Timeline-Tabelle
