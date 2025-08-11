@@ -1,10 +1,8 @@
-// src/models/noteModel.ts
 import pool from '../../db/db.js';
-import { Note, NewNote, UpdateNote } from '../../types/note.js';
+import { Note, NewNote, UpdateNote } from '../../types/application/note.js';
 
-/**
- * Returns all notes for an application owned by the given user.
- */
+// Returns all notes for an application owned by the given user.
+
 export async function getNotesForApplication(
   applicationId: number,
   userId: number,
@@ -20,29 +18,25 @@ export async function getNotesForApplication(
   return rows;
 }
 
-/**
- * Creates a note for an application if it belongs to the given user.
- * Uses a CTE to enforce ownership at insert time.
- */
-export async function createNote(input: NewNote, userId: number): Promise<Note | null> {
+// Creates a new note for an application owned by the given user.
+export async function createNote(
+  applicationId: number,
+  userId: number,
+  input: { date: string | null; text: string },
+): Promise<Note | null> {
   const query = `
     WITH owned AS (
       SELECT id FROM application
       WHERE id = $1 AND user_id = $2
     )
     INSERT INTO note (application_id, date, text)
-    SELECT owned.id, COALESCE($3, DEFAULT), $4
+    SELECT owned.id, COALESCE($3::timestamptz, NOW()), $4
     FROM owned
     RETURNING *;
   `;
-  const values = [
-    input.application_id,
-    userId,
-    input.date ?? null, // DB default handles null
-    input.text,
-  ];
+  const values = [applicationId, userId, input.date, input.text];
   const { rows } = await pool.query(query, values);
-  return rows[0] ?? null; // null if app not owned by user
+  return rows[0] ?? null;
 }
 
 /**

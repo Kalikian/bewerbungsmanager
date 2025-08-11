@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import * as applicationModel from '../../models/application/applicationModel.js';
-import { UpdateApplication } from '../../types/application.js';
+import { UpdateApplication } from '../../types/application/application.js';
 
 // Creates a new job application
 export async function createApplication(req: Request, res: Response) {
@@ -31,6 +31,27 @@ export async function getApplications(req: Request, res: Response) {
   } catch (err) {
     console.error('error:', err);
     res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+// Retrieves a specific application by ID for the authenticated user
+export async function getApplicationById(req: Request, res: Response) {
+  try {
+    // Validate and parse id
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ message: 'Invalid id' });
+    }
+
+    const userId = req.user.id as number;
+
+    const app = await applicationModel.getApplicationById(id, userId);
+    if (!app) return res.status(404).json({ message: 'Application not found' });
+
+    return res.json(app);
+  } catch (err) {
+    console.error('getApplicationById error:', err);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
 

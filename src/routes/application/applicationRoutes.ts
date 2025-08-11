@@ -6,9 +6,10 @@ import * as applicationController from '../../controllers/application/applicatio
 const router = Router();
 
 // All routes below require authentication:
-router.post('/applications', authenticateToken, applicationController.createApplication);
-router.get('/applications', authenticateToken, applicationController.getApplications);
-router.put('/applications/:id', authenticateToken, applicationController.updateApplication);
-router.delete('/applications/:id', authenticateToken, applicationController.deleteApplication);
+router.post('/', authenticateToken, applicationController.createApplication);
+router.get('/', authenticateToken, applicationController.getApplications);
+router.get('/:id', authenticateToken, applicationController.getApplicationById);
+router.patch('/:id', authenticateToken, applicationController.updateApplication);
+router.delete('/:id', authenticateToken, applicationController.deleteApplication);
 
 export default router;

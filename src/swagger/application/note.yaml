@@ -1,0 +1,134 @@
+openapi: 3.0.0
+info:
+  title: Bewerbungsmanager API
+  version: '1.0.0'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/applications/{applicationId}/notes:
+    get:
+      summary: Listet alle Notizen der eigenen Bewerbung auf
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Liste von Notizen
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Legt eine neue Notiz an (nur für eigene Bewerbung)
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+          type: integer,
+          minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - application_id
+                - text
+              properties:
+                application_id:
+                  type: integer
+                  format: int32
+                date:
+                  type: string
+                  format: date-time
+                  nullable: true
+                text:
+                  type: string
+      responses:
+        '201':
+          description: Angelegte Notiz
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Application not found or not owned by user
+
+  /api/applications/{applicationId}/notes/{noteId}:
+    patch:
+      summary: Aktualisiert eine Notiz (nur für eigene Bewerbung)
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: integer
+                  format: int32
+                date:
+                  type: string
+                  format: date-time
+                  nullable: true
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Aktualisierte Notiz
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Note not found / not owned or nothing to update
+
+    delete:
+      summary: Löscht eine Notiz (nur für eigene Bewerbung)
+      tags:
+        - Notes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: noteId
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: Gelöscht
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Note not found or not owned by user

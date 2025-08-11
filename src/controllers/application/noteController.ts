@@ -23,29 +23,21 @@ export async function getNotesForApplication(req: Request, res: Response) {
 // Creates a new note for an application
 export async function createNote(req: Request, res: Response) {
   try {
-    const userId = (req as any).user?.id;
-
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-
-    const { application_id, date, text } = req.body ?? {};
-    if (!application_id || !text) {
-      return res.status(400).json({ error: 'application_id and text are required' });
+    const applicationId = Number(req.params.applicationId);
+    if (!Number.isInteger(applicationId) || applicationId <= 0) {
+      return res.status(400).json({ message: 'Invalid applicationId' });
     }
+    const userId = req.user.id as number;
 
-    const created = await noteModel.createNote(
-      {
-        application_id: Number(application_id),
-        date: date ? new Date(date) : undefined, // optional, DB default will be used if not provided
-        text,
-      },
-      userId,
-    );
+    const note = await noteModel.createNote(applicationId, userId, {
+      date: req.body?.date ?? null,
+      text: req.body.text,
+    });
 
-    if (!created) {
-      return res.status(404).json({ error: 'Application not found or not owned by user' });
-    }
-    return res.status(201).json(created);
-  } catch {
+    if (!note) return res.status(404).json({ message: 'Application not found or not owned' });
+    return res.status(201).json(note);
+  } catch (e) {
+    console.error('createNote error:', e);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }

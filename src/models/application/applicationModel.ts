@@ -1,5 +1,9 @@
 import pool from '../../db/db.js';
-import { NewApplication, Application, UpdateApplication } from '../../types/application.js';
+import {
+  NewApplication,
+  Application,
+  UpdateApplication,
+} from '../../types/application/application.js';
 
 // Creates a new job application in the database
 export async function createApplication(application: NewApplication) {
@@ -47,6 +51,18 @@ export async function getApplications(userId: number): Promise<Application[]> {
   const values = [userId];
   const { rows } = await pool.query(query, values);
   return rows;
+}
+
+// Retrieves a specific application by ID for a user
+export async function getApplicationById(id: number, userId: number) {
+  const query = `
+    SELECT *
+    FROM application
+    WHERE id = $1 AND user_id = $2
+    LIMIT 1;
+  `;
+  const { rows } = await pool.query(query, [id, userId]);
+  return rows[0] ?? null;
 }
 
 // Dynamically build the SET clause depending on provided fields

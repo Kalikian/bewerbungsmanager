@@ -1,0 +1,203 @@
+openapi: 3.0.0
+info:
+  title: Bewerbungsmanager API
+  version: '1.0.0'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/applications:
+    get:
+      summary: Listet eigene Bewerbungen auf
+      tags:
+        - Applications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste von Bewerbungen
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Legt eine neue Bewerbung an
+      tags:
+        - Applications
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Alle Felder optional; user_id kommt aus dem Token.
+              properties:
+                job_title:
+                  type: string
+                  nullable: true
+                company:
+                  type: string
+                  nullable: true
+                contact_name:
+                  type: string
+                  nullable: true
+                contact_email:
+                  type: string
+                  nullable: true
+                contact_phone:
+                  type: string
+                  nullable: true
+                address:
+                  type: string
+                  nullable: true
+                job_source:
+                  type: string
+                  nullable: true
+                job_url:
+                  type: string
+                  nullable: true
+                salary:
+                  type: string
+                  nullable: true
+                work_model:
+                  type: string
+                  nullable: true
+                start_date:
+                  type: string
+                  format: date
+                  nullable: true
+                application_deadline:
+                  type: string
+                  format: date
+                  nullable: true
+                status:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: Angelegte Bewerbung
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+
+  /api/applications/{id}:
+    get:
+      summary: Zeigt eine eigene Bewerbung an
+      tags:
+        - Applications
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Bewerbung
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found or not owned
+
+    patch:
+      summary: Aktualisiert eine Bewerbung (teilweise)
+      tags:
+        - Applications
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Teilaktualisierung; alle Felder optional.
+              properties:
+                job_title:
+                  type: string
+                  nullable: true
+                company:
+                  type: string
+                  nullable: true
+                contact_name:
+                  type: string
+                  nullable: true
+                contact_email:
+                  type: string
+                  nullable: true
+                contact_phone:
+                  type: string
+                  nullable: true
+                address:
+                  type: string
+                  nullable: true
+                job_source:
+                  type: string
+                  nullable: true
+                job_url:
+                  type: string
+                  nullable: true
+                salary:
+                  type: string
+                  nullable: true
+                work_model:
+                  type: string
+                  nullable: true
+                start_date:
+                  type: string
+                  format: date
+                  nullable: true
+                application_deadline:
+                  type: string
+                  format: date
+                  nullable: true
+                status:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Aktualisierte Bewerbung
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found or not owned
+
+    delete:
+      summary: Löscht eine Bewerbung
+      tags:
+        - Applications
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: Gelöscht
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found or not owned
