@@ -1,0 +1,193 @@
+openapi: 3.0.0
+info:
+  title: Bewerbungsmanager API
+  version: '1.0.0'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/applications/{applicationId}/attachments:
+    post:
+      summary: Lade einen neuen Anhang zu einer eigenen Bewerbung hoch
+      tags:
+        - Attachments
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        '201':
+          description: Anhang erstellt
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Bewerbung nicht gefunden
+
+    get:
+      summary: Liste alle Anhänge einer eigenen Bewerbung
+      tags:
+        - Attachments
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Liste von Anhängen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      format: int32
+                    application_id:
+                      type: integer
+                      format: int32
+                    filename_original:
+                      type: string
+                    mime_type:
+                      type: string
+                    size_bytes:
+                      type: integer
+                      format: int64
+                    created_at:
+                      type: string
+                      format: date-time
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Bewerbung nicht gefunden
+
+  /api/applications/attachments/{attachmentId}:
+    get:
+      summary: Hole Metadaten eines einzelnen Anhangs (nur eigene)
+      tags:
+        - Attachments
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attachmentId
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Anhang-Metadaten
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int32
+                  application_id:
+                    type: integer
+                    format: int32
+                  filename_original:
+                    type: string
+                  mime_type:
+                    type: string
+                  size_bytes:
+                    type: integer
+                    format: int64
+                  created_at:
+                    type: string
+                    format: date-time
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Anhang nicht gefunden
+
+    delete:
+      summary: Lösche einen Anhang (nur eigene)
+      tags:
+        - Attachments
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attachmentId
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: Erfolgreich gelöscht
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Anhang nicht gefunden
+
+  /api/applications/attachments/{attachmentId}/download:
+    get:
+      summary: Lade den Dateiinhalt eines Anhangs herunter (nur eigene)
+      tags:
+        - Attachments
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attachmentId
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Datei-Stream
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Anhang nicht gefunden

@@ -44,8 +44,8 @@ paths:
           name: applicationId
           required: true
           schema:
-          type: integer,
-          minimum: 1
+            type: integer,
+            minimum: 1
       requestBody:
         required: true
         content:
