@@ -43,7 +43,7 @@ export async function insertAttachment(input: {
  * Retrieves all attachments for an application owned by the user.
  * Optionally include soft-deleted attachments.
  */
-export async function getAttachments(
+export async function listAttachments(
   applicationId: number,
   userId: number,
   includeDeleted = false,

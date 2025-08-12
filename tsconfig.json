@@ -8,7 +8,7 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": ["node", "express", "multer"],
     "allowJs": true
   },
   "include": ["src", "src/types", "drizzle.config.js"],
