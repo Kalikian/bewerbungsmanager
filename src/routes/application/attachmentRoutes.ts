@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { upload } from '../../middleware/upload.js';
 import { authenticateToken } from '../../middleware/authenticateToken.js';
-import { errorHandler } from '../../middleware/errorHandler.js';
 import * as attachmentController from '../../controllers/application/attachmentController.js';
 
 const router = Router();
@@ -15,24 +14,9 @@ router.post(
 );
 
 // All routes below require authentication:
-router.get(
-  '/applicationId/attachments',
-  authenticateToken,
-  attachmentController.listAttachments,
-  errorHandler,
-);
-router.get('/attachmentId', authenticateToken, attachmentController.getAttachment, errorHandler);
-router.get(
-  '/attachmentId/download',
-  authenticateToken,
-  attachmentController.downloadAttachment,
-  errorHandler,
-);
-router.delete(
-  '/attachmentId',
-  authenticateToken,
-  attachmentController.deleteAttachment,
-  errorHandler,
-);
+router.get('/applicationId/attachments', authenticateToken, attachmentController.listAttachments);
+router.get('/attachmentId', authenticateToken, attachmentController.getAttachment);
+router.get('/attachmentId/download', authenticateToken, attachmentController.downloadAttachment);
+router.delete('/attachmentId', authenticateToken, attachmentController.deleteAttachment);
 
 export default router;
