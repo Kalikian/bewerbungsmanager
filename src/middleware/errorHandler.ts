@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
 
 // Optional: central shape for error responses
 type ErrorBody = {
@@ -6,6 +7,8 @@ type ErrorBody = {
   message?: string;
   details?: unknown;
 };
+
+type PgError = Error & { code?: string; detail?: string; constraint?: string };
 
 // Maps PostgreSQL error codes to HTTP status and messages
 function mapPgError(code: string): { status: number; message: string } | null {
@@ -34,7 +37,7 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
   let status = 500;
   let body: ErrorBody = { error: 'InternalServerError' };
 
-  // Zod validation errors
+  // 1) Zod validation errors
   if (err?.name === 'ZodError' || Array.isArray(err?.issues)) {
     status = 400;
     body = {
@@ -47,8 +50,7 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
     return res.status(status).json(body);
   }
 
-  // JSON parse errors from body-parser
-  // err.type === 'entity.parse.failed' is common
+  // 2) JSON parse errors (body-parser)
   if (err?.type === 'entity.parse.failed') {
     status = 400;
     body = {
@@ -58,28 +60,39 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
     return res.status(status).json(body);
   }
 
-  // Multer errors (file upload)
-  // name: 'MulterError', code examples: 'LIMIT_FILE_SIZE', 'LIMIT_FILE_COUNT', 'LIMIT_UNEXPECTED_FILE'
+  // 3) Multer (file upload) errors
   if (err?.name === 'MulterError') {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      status = 413; // Payload Too Large
-      body = { error: 'FileTooLarge', message: 'Uploaded file exceeds size limit' };
-    } else if (err.code === 'LIMIT_FILE_COUNT') {
-      status = 400;
-      body = { error: 'TooManyFiles', message: 'Too many files uploaded' };
-    } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-      status = 400;
-      body = { error: 'UnexpectedFile', message: 'Unexpected file field' };
-    } else {
-      status = 400;
-      body = { error: 'UploadError', message: err.message };
+    switch (err.code) {
+      case 'LIMIT_FILE_SIZE':
+        status = 413;
+        body = { error: 'FileTooLarge', message: 'Uploaded file exceeds size limit' };
+        break;
+      case 'LIMIT_FILE_COUNT':
+        status = 400;
+        body = { error: 'TooManyFiles', message: 'Too many files uploaded' };
+        break;
+      case 'LIMIT_UNEXPECTED_FILE':
+        status = 400;
+        body = { error: 'UnexpectedFile', message: 'Unexpected file field' };
+        break;
+      default:
+        status = 400;
+        body = { error: 'UploadError', message: err.message };
     }
     return res.status(status).json(body);
   }
 
-  // PostgreSQL errors (node-postgres)
-  if (err?.code && typeof err.code === 'string') {
-    const mapped = mapPgError(err.code);
+  // 4) JWT/Auth errors (optional – je nach Middleware)
+  if (err?.name === 'TokenExpiredError') {
+    return res.status(401).json({ error: 'TokenExpired', message: 'JWT expired' });
+  }
+  if (err?.name === 'JsonWebTokenError') {
+    return res.status(401).json({ error: 'InvalidToken', message: err.message });
+  }
+
+  // 5) PostgreSQL errors
+  if (typeof (err as PgError).code === 'string') {
+    const mapped = mapPgError((err as PgError).code!);
     if (mapped) {
       status = mapped.status;
       body = { error: 'DatabaseError', message: mapped.message };
@@ -87,7 +100,7 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
     }
   }
 
-  // Custom errors with a status (e.g., thrown by services)
+  // 6) Custom errors that carry an HTTP status
   if (Number.isInteger(err?.status)) {
     status = err.status;
     body = {
@@ -98,8 +111,7 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
     return res.status(status).json(body);
   }
 
-  // Fallback: log and return generic 500 without leaking internals
-  // You can replace console.error with a proper logger later
+  // 7) Fallback for any other errors
   console.error(err);
   return res.status(status).json(body);
 }

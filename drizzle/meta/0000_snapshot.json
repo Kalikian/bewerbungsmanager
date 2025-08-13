@@ -1,5 +1,5 @@
 {
-  "id": "a82295c5-8025-4335-8a95-ac052f74ce23",
+  "id": "cb3ca681-41f5-44d0-9aaf-eee9ac449447",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -70,7 +70,7 @@
         },
         "salary": {
           "name": "salary",
-          "type": "varchar(50)",
+          "type": "numeric(12, 2)",
           "primaryKey": false,
           "notNull": false
         },
@@ -142,17 +142,48 @@
           "name": "application_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "file_name": {
-          "name": "file_name",
-          "type": "varchar(255)",
+        "filename_original": {
+          "name": "filename_original",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "url": {
-          "name": "url",
-          "type": "varchar(512)",
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size_bytes": {
+          "name": "size_bytes",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_key": {
+          "name": "storage_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "checksum_sha256": {
+          "name": "checksum_sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uploaded_at": {
+          "name": "uploaded_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         }
@@ -169,7 +200,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -193,17 +224,31 @@
           "name": "application_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "date": {
           "name": "date",
           "type": "date",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         },
         "text": {
           "name": "text",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         }

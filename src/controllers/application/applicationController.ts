@@ -1,27 +1,33 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import * as applicationModel from '../../models/application/applicationModel.js';
 import { UpdateApplication } from '../../types/application/application.js';
+import {
+  createApplicationSchema,
+  updateApplicationSchema,
+  applicationIdParamSchema,
+} from '../../validation/application/applicationSchema.js';
 
 // Creates a new job application
-export async function createApplication(req: Request, res: Response) {
+export async function createApplication(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
+    const body = createApplicationSchema.parse(req.body);
+
     const newApp = await applicationModel.createApplication({
       user_id: userId, // always take user_id from token
-      ...req.body,
+      ...body,
     });
 
     res.status(201).json(newApp);
   } catch (err) {
-    console.error('error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 }
 
 // Retrieves all applications for the authenticated user
-export async function getApplications(req: Request, res: Response) {
+export async function getApplications(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -29,48 +35,41 @@ export async function getApplications(req: Request, res: Response) {
     const apps = await applicationModel.getApplications(userId);
     res.json(apps);
   } catch (err) {
-    console.error('error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 }
 
 // Retrieves a specific application by ID for the authenticated user
-export async function getApplicationById(req: Request, res: Response) {
+export async function getApplicationById(req: Request, res: Response, next: NextFunction) {
   try {
-    // Validate and parse id
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({ message: 'Invalid id' });
-    }
+    //Validate & coerce :id param with Zod (no manual Number checks)
+    const { id } = applicationIdParamSchema.parse(req.params);
 
     const userId = req.user.id as number;
 
     const app = await applicationModel.getApplicationById(id, userId);
-    if (!app) return res.status(404).json({ message: 'Application not found' });
+    if (!app) return res.status(404).json({ error: 'Application not found' });
 
     return res.json(app);
   } catch (err) {
-    console.error('getApplicationById error:', err);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    next(err);
   }
 }
 
 // Updates an existing application
-export async function updateApplication(req: Request, res: Response) {
+export async function updateApplication(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const updateData: UpdateApplication = {
-      id: req.params.id ? Number(req.params.id) : 0,
-      ...req.body,
-    };
+    const { id } = applicationIdParamSchema.parse(req.params);
 
-    // Validate ID
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({ error: 'Invalid application ID' });
-    }
+    const changes = updateApplicationSchema.parse(req.body);
+
+    const updateData: UpdateApplication = {
+      id,
+      ...changes,
+    };
 
     // Ensure the application belongs to the user
     const updatedApp = await applicationModel.updateApplication(updateData, userId);
@@ -80,34 +79,25 @@ export async function updateApplication(req: Request, res: Response) {
 
     res.json(updatedApp);
   } catch (err) {
-    console.error('error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 }
 
 // Deletes an application by ID
-export async function deleteApplication(req: Request, res: Response) {
+export async function deleteApplication(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const appId = Number(req.params.id);
-    if (!appId) return res.status(400).json({ error: 'Invalid application ID' });
+    const { id } = applicationIdParamSchema.parse(req.params);
 
-    // Validate ID
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({ error: 'Invalid application ID' });
-    }
-
-    const deleted = await applicationModel.deleteApplication(appId, userId); // model already checks ownership
+    const deleted = await applicationModel.deleteApplication(id, userId); // model already checks ownership
     if (!deleted) {
       return res.status(404).json({ error: 'Application not found' });
     }
 
     res.status(204).send();
   } catch (err) {
-    console.error('deleteApplicationController error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    next(err);
   }
 }

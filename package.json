@@ -6,6 +6,8 @@
     "build": "tsc",
     "db": "sudo service postgresql start",
     "all": "concurrently \"yarn db\" \"yarn dev\"",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.mjs",
+    "db:migrate": "drizzle-kit migrate --config=drizzle.config.mjs",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write ."
@@ -44,6 +46,6 @@
     "pg": "^8.16.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "zod": "^4.0.15"
+    "zod": "^4.0.17"
   }
 }

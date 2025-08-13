@@ -7,7 +7,7 @@ import {
   timestamp,
   date,
   bigint,
-  index,
+  numeric,
 } from 'drizzle-orm/pg-core';
 
 // User-Tabelle
@@ -32,7 +32,7 @@ export const application = pgTable('application', {
   address: varchar('address', { length: 255 }),
   job_source: varchar('job_source', { length: 255 }),
   job_url: varchar('job_url', { length: 512 }),
-  salary: varchar('salary', { length: 50 }),
+  salary: numeric('salary', { precision: 12, scale: 2 }),
   work_model: varchar('work_model', { length: 50 }),
   start_date: date('start_date'),
   application_deadline: date('application_deadline'),

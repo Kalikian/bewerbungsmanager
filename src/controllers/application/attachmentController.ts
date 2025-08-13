@@ -5,7 +5,7 @@ import {
   appIdParamSchema,
   attachmentIdParamSchema,
   listQuerySchema,
-} from '../../validation/attachmentSchema.js';
+} from '../../validation/application/attachmentSchema.js';
 
 import * as attachmentModel from '../../models/application/attachmentModel.js';
 import * as fileSniff from '../../utils/fileSniff.js';

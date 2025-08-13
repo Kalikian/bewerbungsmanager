@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1754339060044,
-      "tag": "0000_broad_yellowjacket",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1754399524670,
-      "tag": "0001_fresh_jackpot",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1754932054557,
-      "tag": "0002_0003_attachment_final",
+      "when": 1755081047344,
+      "tag": "0000_material_smasher",
       "breakpoints": true
     }
   ]

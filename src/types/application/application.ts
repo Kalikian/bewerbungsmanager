@@ -20,10 +20,10 @@ export interface NewApplication {
   address?: string;                    // Optional: Address of the company or job
   job_source?: string;                 // Optional: Where the job was found (e.g. LinkedIn)
   job_url?: string;                    // Optional: Link to the job posting
-  salary?: string;                     // Optional: Salary information
+  salary?: number;                     // Optional: Salary information
   work_model?: string;                 // Optional: Work model (e.g. remote, onsite)
-  start_date?: Date;                   // Optional: Start date (can be string or Date)
-  application_deadline?: Date;         // Optional: Application deadline (can be string or Date)
+  start_date?: string;                 // Optional: Start date (can be string or Date)
+  application_deadline?: string;       // Optional: Application deadline (can be string or Date)
   status?: ApplicationStatus;          // Optional: Application status (restricted to allowed values)
   // created_at is set automatically by the database (DEFAULT now())
 }
@@ -40,10 +40,10 @@ export interface Application {
   address?: string;
   job_source?: string;
   job_url?: string;
-  salary?: string;
+  salary?: number;
   work_model?: string;
-  start_date?: Date;
-  application_deadline?: Date;
+  start_date?: string;
+  application_deadline?: string;
   status?: ApplicationStatus;
   created_at: Date;
 }
@@ -60,9 +60,9 @@ export interface UpdateApplication {
   address?: string;
   job_source?: string;
   job_url?: string;
-  salary?: string;
+  salary?: number;
   work_model?: string;
-  start_date?: Date;
-  application_deadline?: Date;
+  start_date?: string;
+  application_deadline?: string;
   status?: ApplicationStatus;
 }
