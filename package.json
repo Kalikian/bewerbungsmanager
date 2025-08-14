@@ -3,10 +3,10 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json",
     "db": "sudo service postgresql start",
     "all": "concurrently \"yarn db\" \"yarn dev\"",
-    "db:generate": "drizzle-kit generate --config=drizzle.config.mjs",
+    "db:generate": "yarn build && drizzle-kit generate --config=drizzle.config.mjs",
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.mjs",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",

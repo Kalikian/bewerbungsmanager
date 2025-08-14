@@ -1,5 +1,4 @@
-// src/controllers/noteController.ts
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import * as noteModel from '../../models/application/noteModel.js';
 
 // Retrieves all notes for a specific application
@@ -21,7 +20,7 @@ export async function getNotesForApplication(req: Request, res: Response) {
 }
 
 // Creates a new note for an application
-export async function createNote(req: Request, res: Response) {
+export async function createNote(req: Request, res: Response, next: NextFunction) {
   try {
     const applicationId = Number(req.params.applicationId);
     if (!Number.isInteger(applicationId) || applicationId <= 0) {
@@ -36,14 +35,13 @@ export async function createNote(req: Request, res: Response) {
 
     if (!note) return res.status(404).json({ message: 'Application not found or not owned' });
     return res.status(201).json(note);
-  } catch (e) {
-    console.error('createNote error:', e);
-    return res.status(500).json({ error: 'Internal Server Error' });
+  } catch (error) {
+    next(error);
   }
 }
 
 // Updates an existing note
-export async function updateNote(req: Request, res: Response) {
+export async function updateNote(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = (req as any).user?.id;
 
@@ -66,12 +64,12 @@ export async function updateNote(req: Request, res: Response) {
     }
     return res.status(200).json(updated);
   } catch {
-    return res.status(500).json({ error: 'Internal Server Error' });
+    next();
   }
 }
 
 // Deletes a note by ID
-export async function deleteNote(req: Request, res: Response) {
+export async function deleteNote(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = (req as any).user?.id;
 
@@ -85,6 +83,6 @@ export async function deleteNote(req: Request, res: Response) {
 
     return res.status(204).send();
   } catch {
-    return res.status(500).json({ error: 'Internal Server Error' });
+    next();
   }
 }

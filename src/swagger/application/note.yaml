@@ -12,19 +12,20 @@ components:
 
 paths:
   /api/applications/{applicationId}/notes:
+    parameters:
+      - in: path
+        name: applicationId
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+
     get:
       summary: Listet alle Notizen der eigenen Bewerbung auf
-      tags:
-        - Notes
+      tags: [Notes]
       security:
         - bearerAuth: []
-      parameters:
-        - in: path
-          name: applicationId
-          required: true
-          schema:
-            type: integer
-            format: int32
       responses:
         '200':
           description: Liste von Notizen
@@ -35,36 +36,26 @@ paths:
 
     post:
       summary: Legt eine neue Notiz an (nur für eigene Bewerbung)
-      tags:
-        - Notes
+      tags: [Notes]
       security:
         - bearerAuth: []
-      parameters:
-        - in: path
-          name: applicationId
-          required: true
-          schema:
-            type: integer,
-            minimum: 1
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - application_id
-                - text
+              required: [text]
               properties:
-                application_id:
-                  type: integer
-                  format: int32
                 date:
                   type: string
                   format: date-time
                   nullable: true
                 text:
                   type: string
+            example:
+              date: '2025-08-14T16:03:28.358Z'
+              text: 'string'
       responses:
         '201':
           description: Angelegte Notiz
@@ -76,10 +67,25 @@ paths:
           description: Application not found or not owned by user
 
   /api/applications/{applicationId}/notes/{noteId}:
+    parameters:
+      - in: path
+        name: applicationId
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+      - in: path
+        name: noteId
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+
     patch:
       summary: Aktualisiert eine Notiz (nur für eigene Bewerbung)
-      tags:
-        - Notes
+      tags: [Notes]
       security:
         - bearerAuth: []
       requestBody:
@@ -88,18 +94,14 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - id
               properties:
-                id:
-                  type: integer
-                  format: int32
                 date:
                   type: string
                   format: date-time
                   nullable: true
                 text:
                   type: string
+              minProperties: 1
       responses:
         '200':
           description: Aktualisierte Notiz
@@ -112,17 +114,9 @@ paths:
 
     delete:
       summary: Löscht eine Notiz (nur für eigene Bewerbung)
-      tags:
-        - Notes
+      tags: [Notes]
       security:
         - bearerAuth: []
-      parameters:
-        - in: path
-          name: noteId
-          required: true
-          schema:
-            type: integer
-            format: int32
       responses:
         '204':
           description: Gelöscht

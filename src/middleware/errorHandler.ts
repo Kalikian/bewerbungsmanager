@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ZodError } from 'zod';
 
 // Optional: central shape for error responses
 type ErrorBody = {

@@ -26,66 +26,117 @@ paths:
 
     post:
       summary: Legt eine neue Bewerbung an
-      tags:
-        - Applications
-      security:
-        - bearerAuth: []
+      tags: [Applications]
+      security: [{ bearerAuth: [] }]
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
-              description: Alle Felder optional; user_id kommt aus dem Token.
+              description: >
+                Erstellt eine Bewerbung. Erfordert job_title und company.
+                Alle übrigen Felder sind optional. status default: 'open'.
+                Hinweis: job_url muss eine vollständige URL mit Protokoll (http/https) sein.
+              required: [job_title, company]
               properties:
                 job_title:
                   type: string
-                  nullable: true
+                  minLength: 1
+                  maxLength: 200
+                  example: Software Engineer
                 company:
                   type: string
-                  nullable: true
+                  minLength: 1
+                  maxLength: 200
+                  example: Acme GmbH
                 contact_name:
                   type: string
                   nullable: true
+                  minLength: 1
+                  maxLength: 200
+                  example: Jane Doe
                 contact_email:
                   type: string
                   nullable: true
+                  format: email
+                  maxLength: 320
+                  description: Wird serverseitig in Kleinbuchstaben normalisiert.
+                  example: jane.doe@example.com
                 contact_phone:
                   type: string
                   nullable: true
+                  maxLength: 50
+                  example: '+49 123 4567890'
                 address:
                   type: string
                   nullable: true
+                  maxLength: 300
+                  example: Musterstraße 1, 12345 Berlin
                 job_source:
                   type: string
                   nullable: true
+                  maxLength: 200
+                  example: LinkedIn
                 job_url:
                   type: string
                   nullable: true
+                  format: uri
+                  maxLength: 1000
+                  description: Muss eine vollständige URL mit http:// oder https:// sein.
+                  example: https://careers.example.com/jobs/frontend-developer
                 salary:
-                  type: string
+                  type: number
                   nullable: true
+                  minimum: 0
+                  example: 60000
                 work_model:
                   type: string
                   nullable: true
+                  maxLength: 50
+                  example: Hybrid
                 start_date:
                   type: string
-                  format: date
                   nullable: true
+                  format: date
+                  example: '2025-09-01'
                 application_deadline:
                   type: string
-                  format: date
                   nullable: true
+                  format: date
+                  example: '2025-09-30'
                 status:
                   type: string
                   nullable: true
+                  enum: [open, applied, interview, rejected, offer, contract, withdrawn]
+                  default: open
+                  example: open
+            examples:
+              Minimal:
+                summary: Minimale gültige Payload
+                value:
+                  job_title: Software Engineer
+                  company: Acme GmbH
+              Full:
+                summary: Vollständige gültige Payload
+                value:
+                  job_title: Frontend Developer
+                  company: Tech AG
+                  contact_name: Jane Doe
+                  contact_email: jane.doe@example.com
+                  contact_phone: '+49 123 4567890'
+                  address: Musterstraße 1, 12345 Berlin
+                  job_source: LinkedIn
+                  job_url: https://careers.example.com/jobs/frontend-developer
+                  salary: 60000
+                  work_model: Hybrid
+                  start_date: '2025-09-01'
+                  application_deadline: '2025-09-30'
+                  status: open
       responses:
-        '201':
-          description: Angelegte Bewerbung
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
+        '201': { description: Angelegte Bewerbung }
+        '400': { description: Bad Request }
+        '401': { description: Unauthorized }
 
   /api/applications/{id}:
     get:
@@ -109,95 +160,88 @@ paths:
         '404':
           description: Not found or not owned
 
-    patch:
-      summary: Aktualisiert eine Bewerbung (teilweise)
-      tags:
-        - Applications
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-            format: int32
-      requestBody:
+/api/applications/{id}:
+  patch:
+    summary: Aktualisiert eine Bewerbung (teilweise)
+    tags: [Applications]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - in: path
+        name: id
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: Teilaktualisierung; alle Felder optional.
-              properties:
-                job_title:
-                  type: string
-                  nullable: true
-                company:
-                  type: string
-                  nullable: true
-                contact_name:
-                  type: string
-                  nullable: true
-                contact_email:
-                  type: string
-                  nullable: true
-                contact_phone:
-                  type: string
-                  nullable: true
-                address:
-                  type: string
-                  nullable: true
-                job_source:
-                  type: string
-                  nullable: true
-                job_url:
-                  type: string
-                  nullable: true
-                salary:
-                  type: string
-                  nullable: true
-                work_model:
-                  type: string
-                  nullable: true
-                start_date:
-                  type: string
-                  format: date
-                  nullable: true
-                application_deadline:
-                  type: string
-                  format: date
-                  nullable: true
-                status:
-                  type: string
-                  nullable: true
-      responses:
-        '200':
-          description: Aktualisierte Bewerbung
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not found or not owned
-
-    delete:
-      summary: Löscht eine Bewerbung
-      tags:
-        - Applications
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
+        schema: { type: integer, format: int32 }
+    requestBody:
+      required: true
+      content:
+        application/json:
           schema:
-            type: integer
-            format: int32
-      responses:
-        '204':
-          description: Gelöscht
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not found or not owned
+            type: object
+            description: >
+              Teilaktualisierung; alle Felder optional. Es muss mindestens ein Feld übergeben werden.
+              Hinweis: job_url muss eine vollständige URL mit Protokoll (http/https) sein.
+            minProperties: 1
+            properties:
+              status:
+                type: string
+                nullable: true
+                enum: [open, applied, interview, rejected, offer, contract, withdrawn]
+                example: interview
+              job_url:
+                type: string
+                nullable: true
+                format: uri
+                maxLength: 1000
+                example: https://example.com/job/123
+              salary:
+                type: number
+                nullable: true
+                minimum: 0
+                example: 55000
+              job_title:
+                type: string
+                nullable: true
+                minLength: 1
+                maxLength: 200
+                example: Senior Software Engineer
+              company:
+                type: string
+                nullable: true
+                minLength: 1
+                maxLength: 200
+                example: Acme GmbH
+          examples:
+            UpdateStatus:
+              summary: Status ändern
+              value: { status: interview }
+            AddUrlAndSalary:
+              summary: URL & Gehalt setzen
+              value: { job_url: 'https://example.com/job/123', salary: 55000 }
+            RetitleCompany:
+              summary: Titel & Firma anpassen
+              value: { job_title: 'Senior Software Engineer', company: 'Acme GmbH' }
+    responses:
+      '200': { description: Aktualisierte Bewerbung }
+      '400': { description: Bad Request }
+      '401': { description: Unauthorized }
+      '404': { description: Not found or not owned }
+
+  delete:
+    summary: Löscht eine Bewerbung
+    tags:
+      - Applications
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          format: int32
+    responses:
+      '204':
+        description: Gelöscht
+      '401':
+        description: Unauthorized
+      '404':
+        description: Not found or not owned
