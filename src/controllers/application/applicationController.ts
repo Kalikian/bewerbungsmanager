@@ -6,17 +6,25 @@ import {
   updateApplicationSchema,
   applicationIdParamSchema,
 } from '../../validation/application/applicationSchema.js';
+import { UnauthorizedError } from '../../errors.js';
 
-// Creates a new job application
+/* ---------------------------- Controller functions ---------------------------- */
+
+/**
+ * Create a new application for the authenticated user.
+ * - Requires authentication (user id from token).
+ * - Validates request body with Zod (throws ZodError -> handled centrally as 422).
+ * - Returns 201 + created row.
+ */
 export async function createApplication(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = (req as any).user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedError('Authentication required');
 
     const body = createApplicationSchema.parse(req.body);
 
     const newApp = await applicationModel.createApplication({
-      user_id: userId, // always take user_id from token
+      user_id: userId,
       ...body,
     });
 
@@ -26,11 +34,15 @@ export async function createApplication(req: Request, res: Response, next: NextF
   }
 }
 
-// Retrieves all applications for the authenticated user
+/**
+ * List all applications for the authenticated user.
+ * - Requires authentication.
+ * - Returns 200 + array of applications.
+ */
 export async function getApplications(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = (req as any).user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedError('Authentication required');
 
     const apps = await applicationModel.getApplications(userId);
     res.json(apps);
@@ -39,63 +51,67 @@ export async function getApplications(req: Request, res: Response, next: NextFun
   }
 }
 
-// Retrieves a specific application by ID for the authenticated user
+/**
+ * Get a single application (owned by the authenticated user).
+ * - Requires authentication.
+ * - Validates :id with Zod.
+ * - Model throws NotFoundError(404) if not found/not owned; we do not inline-respond here.
+ */
 export async function getApplicationById(req: Request, res: Response, next: NextFunction) {
   try {
-    //Validate & coerce :id param with Zod (no manual Number checks)
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedError('Authentication required');
+
     const { id } = applicationIdParamSchema.parse(req.params);
 
-    const userId = req.user.id as number;
-
     const app = await applicationModel.getApplicationById(id, userId);
-    if (!app) return res.status(404).json({ error: 'Application not found' });
-
-    return res.json(app);
+    res.json(app);
   } catch (err) {
     next(err);
   }
 }
 
-// Updates an existing application
+/**
+ * Partially update an application (owned by the authenticated user).
+ * - Requires authentication.
+ * - Validates body with Zod (partial schema).
+ * - Model throws:
+ *    - BadRequestError(400) if no updatable fields provided
+ *    - NotFoundError(404) if record does not exist or is not owned by the user
+ * - Returns 200 + updated row on success.
+ */
 export async function updateApplication(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = (req as any).user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedError('Authentication required');
 
     const { id } = applicationIdParamSchema.parse(req.params);
-
     const changes = updateApplicationSchema.parse(req.body);
 
-    const updateData: UpdateApplication = {
-      id,
-      ...changes,
-    };
+    const updateData: UpdateApplication = { id, ...changes };
 
-    // Ensure the application belongs to the user
     const updatedApp = await applicationModel.updateApplication(updateData, userId);
-    if (!updatedApp) {
-      return res.status(404).json({ error: 'Application not found or not owned by user' });
-    }
-
     res.json(updatedApp);
   } catch (err) {
     next(err);
   }
 }
 
-// Deletes an application by ID
+/**
+ * Delete an application (owned by the authenticated user).
+ * - Requires authentication.
+ * - Validates :id with Zod.
+ * - Model throws NotFoundError(404) if nothing was deleted.
+ * - Returns 204 No Content on success.
+ */
 export async function deleteApplication(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = (req as any).user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const userId = req.user?.id;
+    if (!userId) throw new UnauthorizedError('Authentication required');
 
     const { id } = applicationIdParamSchema.parse(req.params);
 
-    const deleted = await applicationModel.deleteApplication(id, userId); // model already checks ownership
-    if (!deleted) {
-      return res.status(404).json({ error: 'Application not found' });
-    }
-
+    await applicationModel.deleteApplication(id, userId);
     res.status(204).send();
   } catch (err) {
     next(err);

@@ -4,9 +4,10 @@ import {
   Application,
   UpdateApplication,
 } from '../../types/application/application.js';
+import { NotFoundError, BadRequestError } from '../../errors.js';
 
 // Creates a new job application in the database
-export async function createApplication(application: NewApplication) {
+export async function createApplication(application: NewApplication): Promise<Application> {
   const query = `
     INSERT INTO application (
       user_id, job_title, company, contact_name, contact_email, contact_phone,
@@ -33,11 +34,11 @@ export async function createApplication(application: NewApplication) {
     application.work_model ?? null,
     application.start_date ?? null,
     application.application_deadline ?? null,
-    application.status ?? 'open', // Default Status
+    application.status ?? 'open', // Default status if not provided
   ];
 
   const { rows } = await pool.query(query, values);
-  return rows[0];
+  return rows[0] as Application;
 }
 
 // Retrieves all applications for a specific user
@@ -50,11 +51,11 @@ export async function getApplications(userId: number): Promise<Application[]> {
   `;
   const values = [userId];
   const { rows } = await pool.query(query, values);
-  return rows;
+  return rows as Application[];
 }
 
 // Retrieves a specific application by ID for a user
-export async function getApplicationById(id: number, userId: number) {
+export async function getApplicationById(id: number, userId: number): Promise<Application> {
   const query = `
     SELECT *
     FROM application
@@ -62,37 +63,40 @@ export async function getApplicationById(id: number, userId: number) {
     LIMIT 1;
   `;
   const { rows } = await pool.query(query, [id, userId]);
-  return rows[0] ?? null;
+
+  if (!rows[0]) {
+    throw new NotFoundError('Application not found');
+  }
+
+  return rows[0] as Application;
 }
 
 // Dynamically build the SET clause depending on provided fields
 export async function updateApplication(
   update: UpdateApplication,
   userId: number,
-): Promise<Application | null> {
-  const { id, ...fields } = update;
+): Promise<Application> {
+  const { id, ...rawFields } = update;
 
-  // never allow changing user_id
-  if ('user_id' in fields) {
-    delete (fields as any).user_id;
+  // never allow changing ownership via update
+  if ('user_id' in rawFields) {
+    // Remove user_id if it exists in the update
+    delete (rawFields as Record<string, unknown>).user_id;
   }
 
   // remove undefined fields
-  const keys = Object.keys(fields).filter(
-    (key) => fields[key as keyof typeof fields] !== undefined,
-  );
+  const entries = Object.entries(rawFields).filter(([, v]) => v !== undefined);
 
-  if (keys.length === 0) {
-    // nothing to update
-    return null;
+  if (entries.length === 0) {
+    throw new BadRequestError('No fields provided to update');
   }
 
-  // build SET clause; note placeholders start at $3 because $1=id, $2=userId
-  const setClause = keys.map((key, idx) => `"${key}" = $${idx + 3}`).join(', ');
+  // build SET clause safely; placeholders start at $3 because $1=id, $2=userId
+  const setClause = entries.map(([key], idx) => `"${key}" = $${idx + 3}`).join(', ');
 
-  const values: (string | number | Date | null)[] = keys.map((key) => (fields as any)[key] ?? null);
+  const values = entries.map(([, v]) => v ?? null) as Array<string | number | Date | null>;
 
-  // first two placeholders are reserved for id and userId
+  // First two placeholders are reserved for id and userId
   values.unshift(userId);
   values.unshift(id);
 
@@ -104,10 +108,16 @@ export async function updateApplication(
   `;
 
   const { rows } = await pool.query(query, values);
-  return rows[0] || null; // null => not found or not owned
+
+  if (!rows[0]) {
+    // when record not found (or not owned), throw 404
+    throw new NotFoundError('Application not found');
+  }
+
+  return rows[0] as Application;
 }
 
-export async function deleteApplication(id: number, userId: number): Promise<boolean> {
+export async function deleteApplication(id: number, userId: number): Promise<void> {
   const query = `
     DELETE FROM application
     WHERE id = $1 AND user_id = $2
@@ -116,6 +126,8 @@ export async function deleteApplication(id: number, userId: number): Promise<boo
 
   const { rowCount } = await pool.query(query, values);
 
-  // rowCount > 0 means a record was deleted
-  return (rowCount ?? 0) > 0;
+  if ((rowCount ?? 0) === 0) {
+    // explicit 404 when nothing was deleted
+    throw new NotFoundError('Application not found');
+  }
 }

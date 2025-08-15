@@ -1,9 +1,10 @@
-import { UserDB } from '../../models/userModel';
+import type { AuthUser } from './user.js';
 
 declare global {
   namespace Express {
     interface Request {
-      user?: Partial<UserDB> & { id: number; email: string };
+      user?: AuthUser;
     }
   }
 }
+export {};

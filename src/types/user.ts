@@ -26,3 +26,6 @@ export interface ChangePasswordData {
   oldPassword: string;
   newPassword: string;
 }
+// Use `type` (not `interface`) because this is a simple alias/composition
+// prevents accidental declaration merging, and keeps the shape exactly in sync
+export type AuthUser = Pick<UserDB, 'id' | 'email'>;
