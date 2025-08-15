@@ -8,7 +8,7 @@ import {
   updateUserNameSchema,
   changeUserPasswordSchema,
   userIdParamSchema,
-} from '../validation/userSchema.js';
+} from '../validation/user/userSchema.js';
 
 // use typed HttpErrors to delegate all error responses to the central errorHandler
 import { BadRequestError } from '../errors.js';

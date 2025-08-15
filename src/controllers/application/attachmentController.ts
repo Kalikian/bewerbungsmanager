@@ -2,9 +2,9 @@ import type { Express, Request, Response, NextFunction } from 'express';
 
 // Zod schemas
 import {
-  appIdParamSchema,
+  attachmentApplicationIdParamSchema,
   attachmentIdParamSchema,
-  listQuerySchema,
+  listAttachmentQuerySchema,
 } from '../../validation/application/attachmentSchema.js';
 
 import * as attachmentModel from '../../models/application/attachmentModel.js';
@@ -17,7 +17,7 @@ export async function uploadAttachment(req: Request, res: Response, next: NextFu
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { applicationId } = appIdParamSchema.parse(req.params);
+    const { applicationId } = attachmentApplicationIdParamSchema.parse(req.params);
 
     const file = (req as any).file as Express.Multer.File | undefined;
     if (!file || !file.buffer || file.size === 0) {
@@ -63,8 +63,8 @@ export async function listAttachments(req: Request, res: Response, next: NextFun
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { applicationId } = appIdParamSchema.parse(req.params);
-    const { includeDeleted = false } = listQuerySchema.parse(req.query);
+    const { applicationId } = attachmentApplicationIdParamSchema.parse(req.params);
+    const { includeDeleted = false } = listAttachmentQuerySchema.parse(req.query);
 
     const items = await attachmentModel.listAttachments(applicationId, userId, includeDeleted);
     return res.json(items);
