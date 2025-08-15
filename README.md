@@ -29,7 +29,7 @@ Backend service for personal application tracking: **Node.js (TypeScript/ESM)**,
 
 ## Quickstart (minimal)
 
-```bash
+````bash
 # Clone & install
 git clone https://github.com/<your-user>/<your-repo>.git
 cd <your-repo> && yarn install
@@ -72,6 +72,16 @@ MAX_FILE_SIZE=10485760
 
 # CORS (frontend origin)
 CORS_ORIGIN=http://localhost:5173
+
+### Using `.env.example`
+
+This repository includes a `.env.example`. Duplicate it and fill in your own values:
+
+```bash
+cp .env.example .env
+# Windows (PowerShell):
+copy .env.example .env
+
 
 # Development
 yarn dev           # start with tsx watch (src/server.ts)
@@ -162,4 +172,4 @@ drizzle/
 
 
 
-```
+````
