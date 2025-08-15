@@ -1,29 +1,44 @@
 import pool from '../../db/db.js';
 import { Note, NewNote, UpdateNote } from '../../types/application/note.js';
+import { NotFoundError, BadRequestError } from '../../errors.js';
 
-// Returns all notes for an application owned by the given user.
-
+/**
+ * Return all notes for an application owned by the given user.
+ * - CHANGED: First verify ownership/existence of the application to distinguish
+ *   "no notes yet" (200 + []) from "application not found/not owned" (404).
+ */
 export async function getNotesForApplication(
   applicationId: number,
   userId: number,
 ): Promise<Note[]> {
+  const owned = await pool.query('SELECT 1 FROM application WHERE id = $1 AND user_id = $2', [
+    applicationId,
+    userId,
+  ]);
+  if ((owned.rowCount ?? 0) === 0) {
+    throw new NotFoundError('Application not found');
+  }
+
   const query = `
     SELECT n.*
     FROM note n
-    JOIN application a ON a.id = n.application_id
-    WHERE a.id = $1 AND a.user_id = $2
+    WHERE n.application_id = $1
     ORDER BY n.date DESC, n.id DESC;
   `;
-  const { rows } = await pool.query(query, [applicationId, userId]);
-  return rows;
+  const { rows } = await pool.query(query, [applicationId]);
+  return rows as Note[];
 }
 
-// Creates a new note for an application owned by the given user.
+/**
+ * Create a new note for an application owned by the given user.
+ * - CHANGED: Throw NotFoundError(404) when application is not owned / not found
+ *   instead of returning null. On success, always return the created note.
+ */
 export async function createNote(
   applicationId: number,
   userId: number,
   input: { date: string | null; text: string },
-): Promise<Note | null> {
+): Promise<Note> {
   const query = `
     WITH owned AS (
       SELECT id FROM application
@@ -34,52 +49,61 @@ export async function createNote(
     FROM owned
     RETURNING *;
   `;
-  const values = [applicationId, userId, input.date, input.text];
+  const values: Array<number | string | null> = [applicationId, userId, input.date, input.text];
   const { rows } = await pool.query(query, values);
-  return rows[0] ?? null;
+
+  if (!rows[0]) {
+    throw new NotFoundError('Application not found');
+  }
+  return rows[0] as Note;
 }
 
 /**
- * Updates a note if it belongs to an application owned by the given user.
- * Only updates provided fields and stamps updated_at.
+ * Update a note if it belongs to an application owned by the given user.
+ * - CHANGED: Throw BadRequestError(400) when no updatable fields are provided.
+ * - CHANGED: Throw NotFoundError(404) when note doesn't exist or isn't owned.
+ * - On success, return the updated note (no nulls).
  */
-export async function updateNote(update: UpdateNote, userId: number): Promise<Note | null> {
-  const { id, ...fields } = update;
+export async function updateNote(update: UpdateNote, userId: number): Promise<Note> {
+  const { id, ...rawFields } = update;
 
-  // Collect only defined fields
-  const keys = Object.keys(fields).filter((k) => (fields as any)[k] !== undefined);
+  const entries = Object.entries(rawFields).filter(([, v]) => v !== undefined);
 
-  if (keys.length === 0) {
-    return null; // nothing to update
+  if (entries.length === 0) {
+    throw new BadRequestError('No fields provided to update');
   }
 
-  // Build dynamic SET clause and values
-  const setClause = keys.map((k, idx) => `"${k}" = $${idx + 3}`).join(', ');
-  const values: (string | number | Date | null)[] = keys.map((k) => (fields as any)[k] ?? null);
+  // build SET clause starting at $3 (since $1=noteId, $2=userId)
+  const setClause = entries.map(([key], idx) => `"${key}" = $${idx + 3}`).join(', ');
 
-  // Always bump updated_at
+  const values = entries.map(([, v]) => v ?? null) as Array<string | number | Date | null>;
+  values.unshift(userId); // becomes $2
+  values.unshift(id); // becomes $1
+
   const query = `
     UPDATE note n
-    SET ${setClause}, updated_at = now()
+    SET ${setClause}, updated_at = NOW()
     FROM application a
     WHERE n.id = $1
       AND n.application_id = a.id
       AND a.user_id = $2
     RETURNING n.*;
   `;
-
-  values.unshift(userId); // becomes $2
-  values.unshift(id); // becomes $1
-
   const { rows } = await pool.query(query, values);
-  return rows[0] ?? null;
+
+  if (!rows[0]) {
+    throw new NotFoundError('Note not found');
+  }
+
+  return rows[0] as Note;
 }
 
 /**
- * Deletes a note if it belongs to an application owned by the given user.
- * Returns true if a row was deleted, false otherwise.
+ * Delete a note if it belongs to an application owned by the given user.
+ * - CHANGED: Throw NotFoundError(404) instead of returning boolean false.
+ * - On success, return void (errors are signaled via exceptions).
  */
-export async function deleteNote(noteId: number, userId: number): Promise<boolean> {
+export async function deleteNote(noteId: number, userId: number): Promise<void> {
   const query = `
     DELETE FROM note n
     USING application a
@@ -88,5 +112,8 @@ export async function deleteNote(noteId: number, userId: number): Promise<boolea
       AND a.user_id = $2;
   `;
   const { rowCount } = await pool.query(query, [noteId, userId]);
-  return (rowCount ?? 0) > 0;
+
+  if ((rowCount ?? 0) === 0) {
+    throw new NotFoundError('Note not found');
+  }
 }
