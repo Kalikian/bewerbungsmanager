@@ -7,7 +7,7 @@ import prettierConfig from 'eslint-config-prettier';
 
 export default [
   {
-    ignores: ['node_modules', '.yarn', 'dist'], 
+    ignores: ['node_modules', '.yarn', 'dist'],
   },
   js.configs.recommended,
   {

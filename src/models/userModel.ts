@@ -2,7 +2,7 @@ import pool from '../db/db.js';
 import bcrypt from 'bcrypt';
 import { mapUserDbRow } from '../utils/mappers.js';
 import { NewUser, UserDB, LoginUser, UpdateUserName, ChangePasswordData } from '../types/user.js';
-import { UnauthorizedError } from '../errors.js';
+import { UnauthorizedError, NotFoundError } from '../errors.js';
 
 //register new user
 export async function registerUser(user: NewUser): Promise<number> {
@@ -49,7 +49,7 @@ export async function getUserById(id: number): Promise<Omit<UserDB, 'password'>>
     [id],
   );
   if ((result.rowCount ?? 0) === 0) {
-    throw new Error('User not found');
+    throw new NotFoundError('User not found');
   }
   return mapUserDbRow(result.rows[0]);
 }

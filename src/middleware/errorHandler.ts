@@ -1,116 +1,123 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { ErrorRequestHandler } from 'express';
+import { ZodError } from 'zod';
+import { HttpError } from '../errors.js';
 
-// Optional: central shape for error responses
-type ErrorBody = {
-  error: string;
-  message?: string;
-  details?: unknown;
-};
+// Minimal shapes + guards
+type PgError = { code?: string; detail?: string };
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
-type PgError = Error & { code?: string; detail?: string; constraint?: string };
+const isPgError = (e: unknown): e is PgError => isObject(e) && 'code' in e;
 
-// Maps PostgreSQL error codes to HTTP status and messages
-function mapPgError(code: string): { status: number; message: string } | null {
-  switch (code) {
-    case '23505': // unique_violation
-      return { status: 409, message: 'Duplicate entry' };
-    case '23503': // foreign_key_violation
-      return { status: 409, message: 'Foreign key violation' };
-    case '23502': // not_null_violation
-      return { status: 400, message: 'Missing required field' };
-    case '23514': // check_violation
-      return { status: 400, message: 'Invalid value (check constraint failed)' };
-    case '22P02': // invalid_text_representation (e.g., invalid integer)
-      return { status: 400, message: 'Invalid input syntax' };
+const hasName = (e: unknown, name: string): boolean => isObject(e) && e['name'] === name;
+
+type BodyParserError = { type?: string; status?: number };
+const isBodyParserError = (e: unknown, type: string): e is BodyParserError =>
+  isObject(e) && e['type'] === type;
+
+type MulterLikeError = { name?: string; code?: string; message?: string };
+const isMulterError = (e: unknown): e is MulterLikeError =>
+  isObject(e) && e['name'] === 'MulterError';
+
+// Map a subset of common PostgreSQL error codes to HTTP responses
+function mapPg(e: PgError) {
+  switch (e.code) {
+    case '23505':
+      return { status: 409, error: 'CONFLICT', message: 'Duplicate key' };
+    case '23503':
+      return { status: 409, error: 'CONFLICT', message: 'Foreign key violation' };
+    case '23502':
+      return { status: 400, error: 'BAD_REQUEST', message: 'Missing required field' };
+    case '23514':
+      return { status: 400, error: 'BAD_REQUEST', message: 'Check constraint violation' };
+    case '22P02':
+      return { status: 400, error: 'BAD_REQUEST', message: 'Invalid input syntax' };
+    case '22001':
+      return { status: 400, error: 'BAD_REQUEST', message: 'Value too long' };
+    case '22003':
+      return { status: 400, error: 'BAD_REQUEST', message: 'Numeric value out of range' };
     default:
       return null;
   }
 }
 
-/**
- * Centralized API error handler.
- * Place this AFTER all routes: app.use(errorHandler)
- */
-export function errorHandler(err: any, _req: Request, res: Response, _next: NextFunction) {
-  // Default
-  let status = 500;
-  let body: ErrorBody = { error: 'InternalServerError' };
+export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  // If headers are already sent, defer to Express' default handler
+  if (res.headersSent) return next(err);
 
-  // 1) Zod validation errors
-  if (err?.name === 'ZodError' || Array.isArray(err?.issues)) {
-    status = 400;
-    body = {
-      error: 'ValidationError',
-      details: err.issues?.map((i: any) => ({
-        path: i.path,
-        message: i.message,
-      })),
-    };
-    return res.status(status).json(body);
+  // Work with `unknown` internally for safe narrowing
+  const e: unknown = err;
+
+  // 1) Validation errors (Zod)
+  if (e instanceof ZodError) {
+    const details = e.issues.map(({ path, message, code }) => ({ path, message, code }));
+    return res.status(422).json({
+      error: 'VALIDATION_ERROR',
+      message: 'Validation failed',
+      details,
+    });
   }
 
-  // 2) JSON parse errors (body-parser)
-  if (err?.type === 'entity.parse.failed') {
-    status = 400;
-    body = {
-      error: 'InvalidJson',
-      message: 'Malformed JSON payload',
-    };
-    return res.status(status).json(body);
+  // 2) Domain/application errors (custom HttpError hierarchy)
+  if (e instanceof HttpError) {
+    return res.status(e.status).json({
+      error: e.code ?? e.name,
+      message: e.message,
+      details: e.details,
+    });
   }
 
-  // 3) Multer (file upload) errors
-  if (err?.name === 'MulterError') {
-    switch (err.code) {
-      case 'LIMIT_FILE_SIZE':
-        status = 413;
-        body = { error: 'FileTooLarge', message: 'Uploaded file exceeds size limit' };
-        break;
-      case 'LIMIT_FILE_COUNT':
-        status = 400;
-        body = { error: 'TooManyFiles', message: 'Too many files uploaded' };
-        break;
-      case 'LIMIT_UNEXPECTED_FILE':
-        status = 400;
-        body = { error: 'UnexpectedFile', message: 'Unexpected file field' };
-        break;
-      default:
-        status = 400;
-        body = { error: 'UploadError', message: err.message };
-    }
-    return res.status(status).json(body);
+  // 3) Body parser errors (malformed JSON / too large)
+  if (isBodyParserError(e, 'entity.parse.failed')) {
+    return res
+      .status(400)
+      .json({ error: 'BAD_REQUEST', message: 'Malformed JSON in request body' });
+  }
+  if (isBodyParserError(e, 'entity.too.large')) {
+    return res
+      .status(413)
+      .json({ error: 'PAYLOAD_TOO_LARGE', message: 'Request payload too large' });
   }
 
-  // 4) JWT/Auth errors (optional – je nach Middleware)
-  if (err?.name === 'TokenExpiredError') {
-    return res.status(401).json({ error: 'TokenExpired', message: 'JWT expired' });
+  // 4) JWT errors (without importing jsonwebtoken; use the name field)
+  if (hasName(e, 'TokenExpiredError')) {
+    return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Token expired' });
   }
-  if (err?.name === 'JsonWebTokenError') {
-    return res.status(401).json({ error: 'InvalidToken', message: err.message });
+  if (hasName(e, 'JsonWebTokenError')) {
+    return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Invalid token' });
   }
 
-  // 5) PostgreSQL errors
-  if (typeof (err as PgError).code === 'string') {
-    const mapped = mapPgError((err as PgError).code!);
+  // 5) File upload errors (Multer-like)
+  if (isMulterError(e)) {
+    return res.status(400).json({
+      error: 'UPLOAD_ERROR',
+      message: e.message ?? 'Upload failed',
+      details: e.code,
+    });
+  }
+
+  // 6) PostgreSQL errors
+  if (isPgError(e)) {
+    const mapped = mapPg(e);
     if (mapped) {
-      status = mapped.status;
-      body = { error: 'DatabaseError', message: mapped.message };
-      return res.status(status).json(body);
+      return res.status(mapped.status).json({ error: mapped.error, message: mapped.message });
     }
   }
 
-  // 6) Custom errors that carry an HTTP status
-  if (Number.isInteger(err?.status)) {
-    status = err.status;
-    body = {
-      error: err?.name || 'Error',
-      message: err?.message,
-      details: err?.details,
-    };
-    return res.status(status).json(body);
+  // 7) Fallback (log concisely, avoid leaking internals)
+  // Keep logs useful: add request context
+  const context = { method: req.method, url: req.originalUrl, ip: req.ip };
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Unhandled error:', err, context);
+  } else {
+    console.error('Unhandled error:', {
+      message: (err as any)?.message,
+      name: (err as any)?.name,
+      ...context,
+    });
   }
 
-  // 7) Fallback for any other errors
-  console.error(err);
-  return res.status(status).json(body);
-}
+  return res.status(500).json({
+    error: 'INTERNAL_SERVER_ERROR',
+    message: 'Something went wrong',
+  });
+};

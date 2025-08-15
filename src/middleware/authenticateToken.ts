@@ -28,7 +28,6 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
     (req as any).user = decoded;
     next();
   } catch (error) {
-    // If the token is invalid or expired, return 403 Forbidden
-    return res.status(403).json({ error: 'Invalid or expired token' });
+    next(error);
   }
 }

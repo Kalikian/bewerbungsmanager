@@ -9,7 +9,6 @@ import {
   changeUserPasswordSchema,
   userIdParamSchema,
 } from '../validation/userSchema.js';
-import { ne } from 'drizzle-orm';
 
 //Use SECRET_KEY from environment variables, or fallback to a default string if not set
 const SECRET_KEY = process.env.SECRET_KEY || 'your_fallback_secret';
