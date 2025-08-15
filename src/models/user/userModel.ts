@@ -1,8 +1,14 @@
-import pool from '../db/db.js';
+import pool from '../../db/db.js';
 import bcrypt from 'bcrypt';
-import { mapUserDbRow } from '../utils/mappers.js';
-import { NewUser, UserDB, LoginUser, UpdateUserName, ChangePasswordData } from '../types/user.js';
-import { UnauthorizedError, NotFoundError, ConflictError, BadRequestError } from '../errors.js';
+import { mapUserDbRow } from '../../utils/mappers.js';
+import {
+  NewUser,
+  UserDB,
+  LoginUser,
+  UpdateUserName,
+  ChangePasswordData,
+} from '../../types/user/user.js';
+import { UnauthorizedError, NotFoundError, ConflictError, BadRequestError } from '../../errors.js';
 
 // register new user
 export async function registerUser(user: NewUser): Promise<number> {

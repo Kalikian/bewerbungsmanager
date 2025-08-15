@@ -1,4 +1,4 @@
-import type { UserDB } from '../types/user.js';
+import type { UserDB } from '../types/user/user.js';
 
 // Utility to map a single DB user (snake_case) to a TS User (camelCase)
 export function mapUserDbRow(row: any): Omit<UserDB, 'password'> {

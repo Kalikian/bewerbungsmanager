@@ -3,7 +3,7 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './swagger.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import userRoutes from './routes/userRoutes.js';
+import userRoutes from './routes/user/userRoutes.js';
 import applicationRoutes from './routes/application/applicationRoutes.js';
 import noteRoutes from './routes/application/noteRoutes.js';
 import attachmentRoutes from './routes/application/attachmentRoutes.js';
