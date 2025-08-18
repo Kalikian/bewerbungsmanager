@@ -86,7 +86,6 @@ export async function updateApplication(
 
   // remove undefined fields
   const entries = Object.entries(rawFields).filter(([, v]) => v !== undefined);
-
   if (entries.length === 0) {
     throw new BadRequestError('No fields provided to update');
   }

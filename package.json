@@ -8,7 +8,7 @@
     "all": "concurrently \"yarn db\" \"yarn dev\"",
     "db:generate": "yarn build && drizzle-kit generate --config=drizzle.config.mjs",
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.mjs",
-    "start": "node dist/server.js",
+    "start": "cross-env NODE_ENV=production node dist/server.js",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write ."
   },
@@ -23,9 +23,11 @@
     "@types/pg": "^8",
     "@types/swagger-jsdoc": "^6",
     "@types/swagger-ui-express": "^4.1.8",
+    "@types/wtfnode": "^0",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "concurrently": "^9.2.0",
+    "cross-env": "^10.0.0",
     "drizzle-kit": "^0.31.4",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
@@ -34,7 +36,8 @@
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.20.3",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "wtfnode": "^0.10.0"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

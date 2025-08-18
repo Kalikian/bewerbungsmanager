@@ -122,7 +122,7 @@ src/
   middleware/
     authenticateToken.ts
     errorHandler.ts
-    adminCheck.ts
+    upload.ts
   models/
     application/
       applicationModel.ts
