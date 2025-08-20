@@ -1,11 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import * as applicationModel from '../../models/application/applicationModel.js';
-import { UpdateApplication } from '../../types/application/application.js';
+import { UpdateApplication } from '@bewerbungsmanager/shared';
 import {
   createApplicationSchema,
   updateApplicationSchema,
   applicationIdParamSchema,
-} from '../../validation/application/applicationSchema.js';
+} from '@bewerbungsmanager/shared';
 import { UnauthorizedError } from '../../errors.js';
 
 /* ---------------------------- Controller functions ---------------------------- */

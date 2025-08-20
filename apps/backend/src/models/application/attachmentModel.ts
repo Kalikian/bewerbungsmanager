@@ -1,5 +1,5 @@
 import pool from '../../db/db.js';
-import { AttachmentRow } from '../../types/application/attachment.js';
+import { AttachmentRow } from '@bewerbungsmanager/shared';
 
 /**
  * Insert a new attachment for an application the user owns.

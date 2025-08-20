@@ -8,7 +8,7 @@ import {
   updateUserNameSchema,
   changeUserPasswordSchema,
   userIdParamSchema,
-} from '../../validation/user/userSchema.js';
+} from '@bewerbungsmanager/shared';
 
 // use typed HttpErrors to delegate all error responses to the central errorHandler
 import { BadRequestError } from '../../errors.js';

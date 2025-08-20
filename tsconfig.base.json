@@ -7,9 +7,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "@bewerbungsmanager/shared": ["packages/shared/src"]
-    }
+    "baseUrl": "."
   }
 }

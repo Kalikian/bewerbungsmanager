@@ -5,7 +5,7 @@ import {
   attachmentApplicationIdParamSchema,
   attachmentIdParamSchema,
   listAttachmentQuerySchema,
-} from '../../validation/application/attachmentSchema.js';
+} from '@bewerbungsmanager/shared';
 
 import * as attachmentModel from '../../models/application/attachmentModel.js';
 import * as fileSniff from '../../utils/fileSniff.js';

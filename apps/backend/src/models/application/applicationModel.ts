@@ -1,9 +1,5 @@
 import pool from '../../db/db.js';
-import {
-  NewApplication,
-  Application,
-  UpdateApplication,
-} from '../../types/application/application.js';
+import { NewApplication, Application, UpdateApplication } from '@bewerbungsmanager/shared';
 import { NotFoundError, BadRequestError } from '../../errors.js';
 
 // Creates a new job application in the database

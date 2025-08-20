@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "moduleResolution": "Bundler"
+  },
+  "include": [
+    "src",
+    // Include shared package types
+    "../../packages/shared/src"
+  ]
+}

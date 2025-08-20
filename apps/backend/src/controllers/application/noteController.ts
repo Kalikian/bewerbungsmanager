@@ -6,7 +6,7 @@ import {
   updateNoteSchema,
   notesApplicationIdParamSchema,
   noteIdParamSchema,
-} from '../../validation/application/noteSchema.js';
+} from '@bewerbungsmanager/shared';
 
 /* ---------------------------- Controller functions ---------------------------- */
 

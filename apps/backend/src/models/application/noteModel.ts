@@ -1,5 +1,5 @@
 import pool from '../../db/db.js';
-import { Note, NewNote, UpdateNote } from '../../types/application/note.js';
+import { Note, NewNote, UpdateNote } from '@bewerbungsmanager/shared';
 import { NotFoundError, BadRequestError } from '../../errors.js';
 
 /**

@@ -7,7 +7,7 @@ import {
   LoginUser,
   UpdateUserName,
   ChangePasswordData,
-} from '../../types/user/user.js';
+} from '@bewerbungsmanager/shared';
 import { UnauthorizedError, NotFoundError, ConflictError, BadRequestError } from '../../errors.js';
 
 // register new user
