@@ -1,38 +1,29 @@
 {
+  "private": true,
   "name": "bewerbungsmanager",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "type": "module",
   "scripts": {
-    "dev": "tsx watch apps/backend/src/server.ts",
-    "build": "tsc -p tsconfig.json",
-    "db": "sudo service postgresql start",
-    "all": "concurrently \"yarn db\" \"yarn dev\"",
-    "db:generate": "yarn build && drizzle-kit generate --config=drizzle.config.mjs",
-    "db:migrate": "drizzle-kit migrate --config=drizzle.config.mjs",
-    "start": "cross-env NODE_ENV=production node dist/server.js",
-    "lint": "eslint src --ext .ts",
-    "format": "prettier --write ."
+    "dev": "concurrently -n BE,FE -c blue,green \"yarn --cwd apps/backend dev\" \"yarn --cwd apps/frontend dev\"",
+    "dev:be": "yarn --cwd apps/backend dev",
+    "dev:fe": "yarn --cwd apps/frontend dev",
+    "build": "yarn --cwd packages/shared build && yarn --cwd apps/backend build && yarn --cwd apps/frontend build",
+    "lint": "eslint ."
   },
   "packageManager": "yarn@4.6.0",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@types/bcrypt": "^6.0.0",
-    "@types/express": "^5.0.3",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/multer": "^2.0.0",
-    "@types/node": "^24.1.0",
-    "@types/pg": "^8",
-    "@types/swagger-jsdoc": "^6",
-    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "concurrently": "^9.2.0",
     "cross-env": "^10.0.0",
-    "drizzle-kit": "^0.31.4",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
     "prettier": "^3.6.2",
-    "tsx": "^4.20.3",
     "typescript": "^5.9.2"
   },
   "dependencies": {
