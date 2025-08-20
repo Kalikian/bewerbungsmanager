@@ -1,4 +1,4 @@
-import type { UserDB } from '../types/user/user.js';
+import type { UserDB } from '@bewerbungsmanager/shared';
 
 // Utility to map a single DB user (snake_case) to a TS User (camelCase)
 export function mapUserDbRow(row: any): Omit<UserDB, 'password'> {
