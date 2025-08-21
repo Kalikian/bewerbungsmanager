@@ -1,0 +1,5 @@
+packageExtensions:
+  "eslint-config-next@*":
+    dependencies:
+      "@next/eslint-plugin-next": "*"
+      "next": "*"

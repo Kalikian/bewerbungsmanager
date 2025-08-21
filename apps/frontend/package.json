@@ -3,10 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 3001",
-    "build": "next build --turbopack",
-    "start": "next start -p 3001",
-    "lint": "eslint"
+    "dev": "next dev -p 3001",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 yarn node $(yarn bin next) build --no-lint",
+    "start": "yarn node $(yarn bin next) start -p 3001"
   },
   "dependencies": {
     "next": "15.5.0",
@@ -15,12 +14,15 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@next/eslint-plugin-next": "^15.5.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
