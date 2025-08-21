@@ -1,0 +1,18 @@
+{
+  "folders": [
+    {
+      "path": "apps/backend",
+    },
+    {
+      "path": "apps/frontend",
+    },
+    {
+      "path": "packages/shared",
+    },
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {},
+  "typescript.tsdk": ".yarn/sdks/typescript/lib", // falls du Yarn PnP SDK nutzt
+}
