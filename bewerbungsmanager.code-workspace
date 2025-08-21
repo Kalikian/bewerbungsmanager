@@ -1,18 +1,21 @@
 {
   "folders": [
-    {
-      "path": "apps/backend",
-    },
-    {
-      "path": "apps/frontend",
-    },
-    {
-      "path": "packages/shared",
-    },
-    {
-      "path": ".",
-    },
+    { "path": "." },
+    { "path": "apps/backend" },
+    { "path": "apps/frontend" },
+    { "path": "packages/shared" },
   ],
-  "settings": {},
-  "typescript.tsdk": ".yarn/sdks/typescript/lib", // falls du Yarn PnP SDK nutzt
+  "settings": {
+    "typescript.tsdk": "/home/hagop/projects/bewerbungsmanager/.yarn/sdks/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+
+    "eslint.nodePath": "/home/hagop/projects/bewerbungsmanager/.yarn/sdks",
+
+    "prettier.prettierPath": "/home/hagop/projects/bewerbungsmanager/.yarn/sdks/prettier/index.cjs",
+    "prettier.configPath": "/home/hagop/projects/bewerbungsmanager/prettier.config.cjs",
+    "prettier.pluginSearchDirs": ["/home/hagop/projects/bewerbungsmanager"],
+
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
 }
