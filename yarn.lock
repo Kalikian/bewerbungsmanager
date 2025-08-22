@@ -89,7 +89,7 @@ __metadata:
   dependencies:
     "@eslint/eslintrc": "npm:^3"
     "@next/eslint-plugin-next": "npm:^15.5.0"
-    "@tailwindcss/postcss": "npm:^4"
+    "@tailwindcss/postcss": "npm:^4.1.12"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
@@ -100,7 +100,7 @@ __metadata:
     next: "npm:15.5.0"
     react: "npm:19.1.0"
     react-dom: "npm:19.1.0"
-    tailwindcss: "npm:^4"
+    tailwindcss: "npm:^4.1.12"
     typescript: "npm:^5"
   languageName: unknown
   linkType: soft
@@ -1280,7 +1280,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tailwindcss/postcss@npm:^4":
+"@tailwindcss/postcss@npm:^4.1.12":
   version: 4.1.12
   resolution: "@tailwindcss/postcss@npm:4.1.12"
   dependencies:
@@ -6644,7 +6644,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwindcss@npm:4.1.12, tailwindcss@npm:^4":
+"tailwindcss@npm:4.1.12, tailwindcss@npm:^4.1.12":
   version: 4.1.12
   resolution: "tailwindcss@npm:4.1.12"
   checksum: 10c0/0e43375d8de91e1c97a60ed7855f1bf02d5cac61a909439afd54462604862ee71706d812c0447a639f2ef98051a8817840b3df6847c7a1ed015f7a910240ffef
