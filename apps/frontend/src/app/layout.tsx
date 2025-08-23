@@ -1,18 +1,20 @@
 import type { ReactNode } from 'react';
 import '../styles/globals.css';
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import Header from "@/components/layout/header";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body  className="bg-background text-foreground">
         <ThemeProvider
         attribute="class" 
         defaultTheme="system" 
         enableSystem 
         disableTransitionOnChange
         >
-          {children}
+          <Header/>
+          <main>{children}</main>
         </ThemeProvider>
       </body>
     </html>
