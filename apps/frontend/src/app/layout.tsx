@@ -1,23 +1,22 @@
-import type { ReactNode } from 'react';
-import '../styles/globals.css';
-import { ThemeProvider } from "@/components/ui/theme-provider";
-import Header from "@/components/layout/header";
+// root layout
+import "../styles/globals.css"
+import { ThemeProvider } from "@/components/ui/theme-provider"
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body  className="min-h-screen bg-background text-foreground antialiased">
+      <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider
-        attribute="class" 
-        defaultTheme="system" 
-        enableSystem 
-        disableTransitionOnChange
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
         >
-          <Header/>
-          <main>{children}</main>
+          {children}
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }
+
 

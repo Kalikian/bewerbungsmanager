@@ -1,3 +1,4 @@
+// Landing Page
 import React from 'react';
 import HeroSection from '@/components/landing/hero-section';
 import FeatureSection from '@/components/landing/features-sections';
