@@ -3,7 +3,7 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 export default function Header() {
   return (
     <header className="w-full border-b border-border bg-background text-foreground">
-      <div className="mx-auto flex max-w-full items-center justify-between px-4 py-4">
+      <div className="mx-auto flex max-w-full items-center justify-between px-8 py-4">
         {/* Left: Project name */}
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
           Bewerbungsmanager
