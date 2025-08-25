@@ -33,82 +33,84 @@ const {
           <CardDescription>Create your account to get started.</CardDescription>
         </CardHeader>
         <form noValidate onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="grid gap-6">
-            {/* First + Last Name */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-          id="firstName"
-          placeholder="Max"
-          aria-invalid={!!errors.firstName}
-          aria-describedby="firstName-error"
-          className={cn(!!errors.firstName && "border-red-500 focus-visible:ring-red-500")}
-          {...register("firstName")}
-        />
-        {errors.firstName && (
-          <p id="firstName-error" className="text-sm text-red-500">
-            {errors.firstName.message}
-          </p>
-        )}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="lastName">Last Name</Label>
-        <Input
-          id="lastName"
-          placeholder="Mustermann"
-          aria-invalid={!!errors.lastName}
-          aria-describedby="lastName-error"
-          className={cn(!!errors.lastName && "border-red-500 focus-visible:ring-red-500")}
-          {...register("lastName")}
-        />
-        {errors.lastName && (
-          <p id="lastName-error" className="text-sm text-red-500">
-            {errors.lastName.message}
-          </p>
-        )}
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+          <CardContent className="grid gap-y-4"> {/* mehr Abstand zwischen Feldern */}
+  {/* First + Last Name nebeneinander */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8">
+    {/* First Name */}
+    <div className="grid grid-rows-[auto_auto_1.25rem] gap-y-1">
+      <Label htmlFor="firstName">First Name</Label>
       <Input
-        id="email"
-        type="email"
-        placeholder="name@example.com"
-        aria-invalid={!!errors.email}
-        aria-describedby="email-error"
-        className={cn(!!errors.email && "border-red-500 focus-visible:ring-red-500")}
-        {...register("email")}
+        id="firstName"
+        placeholder="Max"
+        aria-invalid={!!errors.firstName}
+        aria-describedby="firstName-error"
+        className={cn(!!errors.firstName && "border-red-500 focus-visible:ring-red-500")}
+        {...register("firstName")}
       />
-      {errors.email && (
-        <p id="email-error" className="text-sm text-red-500">
-          {errors.email.message}
-        </p>
-      )}
-            </div>
+      <p
+        id="firstName-error"
+        aria-live="polite"
+        className={cn(errors.firstName ? "text-red-500" : "opacity-0")}
+      >
+        {errors.firstName?.message ?? "placeholder"}
+      </p>
+    </div>
 
-            {/* Password */}
-            <div className="grid gap-2">
-              <Label htmlFor="email">Password</Label>
+    {/* Last Name */}
+    <div className="grid grid-rows-[auto_auto_1.25rem] gap-y-1">
+      <Label htmlFor="lastName">Last Name</Label>
       <Input
-        id="password"
-        type="password"
-        placeholder="******"
-        aria-invalid={!!errors.password}
-        aria-describedby="password-error"
-        className={cn(!!errors.password && "border-red-500 focus-visible:ring-red-500")}
-        {...register("password")}
+        id="lastName"
+        placeholder="Mustermann"
+        aria-invalid={!!errors.lastName}
+        aria-describedby="lastName-error"
+        className={cn(!!errors.lastName && "border-red-500 focus-visible:ring-red-500")}
+        {...register("lastName")}
       />
-      {errors.password && (
-        <p id="password-error" className="text-sm text-red-500">
-          {errors.password.message}
-        </p>
-      )}
-            </div>
-          </CardContent>
+      <p
+        id="lastName-error"
+        aria-live="polite"
+        className={cn(errors.lastName ? "text-red-500" : "opacity-0")}
+      >
+        {errors.lastName?.message ?? "placeholder"}
+      </p>
+    </div>
+  </div>
+
+  {/* Email */}
+  <div className="grid grid-rows-[auto_auto_1.25rem] gap-y-1">
+    <Label htmlFor="email">Email</Label>
+    <Input
+      id="email"
+      type="email"
+      placeholder="name@example.com"
+      aria-invalid={!!errors.email}
+      aria-describedby="email-error"
+      className={cn(!!errors.email && "border-red-500 focus-visible:ring-red-500")}
+      {...register("email")}
+    />
+    <p id="email-error" aria-live="polite" className={cn(errors.email ? "text-red-500" : "opacity-0")}>
+      {errors.email?.message ?? "placeholder"}
+    </p>
+  </div>
+
+  {/* Password */}
+  <div className="grid grid-rows-[auto_auto_1.25rem] gap-y-1">
+    <Label htmlFor="password">Password</Label>
+    <Input
+      id="password"
+      type="password"
+      placeholder="******"
+      aria-invalid={!!errors.password}
+      aria-describedby="password-error"
+      className={cn(!!errors.password && "border-red-500 focus-visible:ring-red-500")}
+      {...register("password")}
+    />
+    <p id="password-error" aria-live="polite" className={cn(errors.password ? "text-red-500" : "opacity-0")}>
+      {errors.password?.message ?? "placeholder"}
+    </p>
+  </div>
+</CardContent>
           <CardFooter className="pt-6">
             <Button type="submit" className="w-full" >Create Account</Button>
           </CardFooter>
