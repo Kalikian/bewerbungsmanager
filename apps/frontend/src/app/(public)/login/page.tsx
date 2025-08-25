@@ -1,3 +1,5 @@
+import { loginUserSchema, type LoginUserInput } from "@bewerbungsmanager/shared";
+
 const LoginPage = () => {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen px-4 py-12">

@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    webpack: (config) => {
+    // Add support for TypeScript path aliases
+    config.resolve.extensionAlias = {
+      '.js': ['.ts', '.js'],
+      '.mjs': ['.mts', '.mjs'],
+      '.cjs': ['.cts', '.cjs'],
+    };
+    return config;
+  },
   reactStrictMode: true,
   experimental: { externalDir: true },
   transpilePackages: ['@bewerbungsmanager/shared'],
@@ -10,3 +19,5 @@ const nextConfig = {
     ];
   },
 };
+
+export default nextConfig;
