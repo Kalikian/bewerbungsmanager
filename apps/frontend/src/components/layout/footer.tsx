@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="w-full border-b border-border bg-background text-foreground">
+    <footer className="w-full border-t border-border bg-background text-foreground">
       <div className="mx-auto flex flex-col items-center justify-between px-8 py-8 sm:flex-row">
         {/* Left side: Project name + year */}
         <p className="text-sm text-muted-foreground">
