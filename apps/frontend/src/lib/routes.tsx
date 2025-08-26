@@ -1,6 +1,6 @@
 // Define where to show auth links (login/register)
-export const SHOW_LINKS_ON = new Set<string>(['/']);
-const SHOW_LINKS_PREFIXES = ['/marketing']; 
+export const SHOW_LINKS_ON = new Set<string>(["/"]);
+const SHOW_LINKS_PREFIXES = ["/marketing"];
 
 export function shouldShowAuthLinks(pathname: string | null): boolean {
   if (!pathname) return false;

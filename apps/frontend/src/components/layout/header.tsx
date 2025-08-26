@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ModeToggle } from '@/components/ui/mode-toggle';
-import{ shouldShowAuthLinks }from '@/lib/routes';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ModeToggle } from "@/components/ui/mode-toggle";
+import { shouldShowAuthLinks } from "@/lib/routes";
 
 export default function Header() {
   const pathname = usePathname();
-const showLinks = shouldShowAuthLinks(pathname);
+  const showLinks = shouldShowAuthLinks(pathname);
 
   return (
     <header className="w-full border-b border-border bg-background text-foreground">
@@ -19,10 +19,7 @@ const showLinks = shouldShowAuthLinks(pathname);
         <div className="flex items-center gap-4">
           {showLinks && (
             <>
-              <Link
-                href="/login"
-                className="text-sm font-medium hover:underline"
-              >
+              <Link href="/login" className="text-sm font-medium hover:underline">
                 Login
               </Link>
               <Link

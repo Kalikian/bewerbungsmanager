@@ -10,7 +10,7 @@ export default function Footer() {
         {/* Right side: Links */}
         <div className="flex gap-6 text-sm">
           <a
-            href="https://github.com/Kalikian" 
+            href="https://github.com/Kalikian"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-foreground"
@@ -26,5 +26,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

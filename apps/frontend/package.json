@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "NODE_OPTIONS=--max-old-space-size=4096 yarn node $(yarn bin next) build --no-lint",
-    "start": "yarn node $(yarn bin next) start -p 3001"
+    "start": "yarn node $(yarn bin next) start -p 3001",
+    "lint": "eslint . --ext .js,.ts,.tsx",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -30,10 +32,15 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.6.2",
     "shadcn-ui": "^0.9.5",
     "tailwindcss": "^4.1.12",
     "tw-animate-css": "^1.3.7",

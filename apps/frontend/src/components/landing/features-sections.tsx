@@ -1,13 +1,10 @@
-import { FileText, StickyNote, Paperclip, BarChart } from "lucide-react"
+import { FileText, StickyNote, Paperclip, BarChart } from "lucide-react";
 
 export default function FeatureSection() {
   return (
     <>
       {/* Features Section */}
-      <section
-        id="features"
-        className="bg-background text-foreground py-24 sm:py-32"
-      >
+      <section id="features" className="bg-background text-foreground py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-base font-semibold text-primary">Features</h2>
@@ -15,8 +12,8 @@ export default function FeatureSection() {
               Everything you need to manage applications
             </p>
             <p className="mt-6 text-lg text-muted-foreground">
-              Bewerbungsmanager helps you stay organized during your job hunt
-              with all essential tools in one place.
+              Bewerbungsmanager helps you stay organized during your job hunt with all essential
+              tools in one place.
             </p>
           </div>
 
@@ -68,5 +65,5 @@ export default function FeatureSection() {
         </div>
       </section>
     </>
-  )
+  );
 }

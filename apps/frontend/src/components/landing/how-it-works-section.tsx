@@ -8,16 +8,14 @@ export default function HowItWorksSection() {
     {
       number: "2",
       title: "Add Applications",
-      description:
-        "Enter job details, upload documents, and add personal notes.",
+      description: "Enter job details, upload documents, and add personal notes.",
     },
     {
       number: "3",
       title: "Stay in Control",
-      description:
-        "Track your progress and manage all applications in one place.",
+      description: "Track your progress and manage all applications in one place.",
     },
-  ]
+  ];
 
   return (
     <section className="bg-background text-foreground py-24 sm:py-32">
@@ -43,5 +41,5 @@ export default function HowItWorksSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
