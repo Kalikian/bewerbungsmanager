@@ -19,7 +19,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # Environment Variables
-.env
+.env*
+apps/*/.env*
+packages/*/.env*
 
 # Editor/Caches
 .DS_Store

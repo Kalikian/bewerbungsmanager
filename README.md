@@ -1,68 +1,77 @@
-# Bewerbungsmanager (Job Application Manager) — Backend
+# Bewerbungsmanager (Job Application Manager) — Monorepo
 
-Backend service for personal application tracking: **Node.js (TypeScript/ESM)**, **Express**, **PostgreSQL** with **plain SQL in the model layer**, and **Drizzle Kit exclusively for schema & migrations** (no ORM). Input validation via **Zod** and API documentation via **Swagger-UI**.
+Personal app to track job applications. Monorepo with **Frontend (Next.js/React)**, **Backend (TypeScript/Express/PostgreSQL)** and **shared Zod validation**. Backend uses **plain SQL in the model layer**, with **Drizzle Kit** only for schema & migrations (no ORM). API documented via **Swagger-UI**.
 
 ## Features
 
-- **JWT authentication**: register & login, Bearer token for protected routes
-- **Applications CRUD**: create, list, update, delete job applications
-- **Notes per application**: list & create notes scoped to the user’s application
-- **Attachments**: multipart upload endpoint, file metadata stored in DB, files saved to local storage (`UPLOAD_DIR`)
-- **Validation with Zod**: schemas for params, query, and request bodies
-- **Unified error handling**: typed HTTP errors + Express error middleware
-- **Swagger-UI** available at `/api/docs`
-- **Plain SQL access**: parameterized queries in the model layer (no ORM)
-- **Drizzle Kit migrations**: schema defined in SQL/TS, migrations generated & applied as SQL
-- **Config via `.env`**: database URL, JWT secret, upload dir, CORS origin, etc.
+- **Auth (JWT)**: register & login, protected routes
+- **Applications CRUD**: create, list, update, delete
+- **Notes per application**: scoped to the user’s application
+- **Attachments**: multipart upload, file metadata in DB, files saved to local storage (`UPLOAD_DIR`)
+- **Validation with Zod**: shared schemas used by FE (react-hook-form) & BE (controllers)
+- **Unified error handling**: typed errors + Express error middleware
+- **Swagger-UI**: live API docs at `/api/docs`
+- **Plain SQL**: parameterized queries in the model layer
+- **ESM/TypeScript** across the stack, **ESLint/Prettier** for quality
 
 ## Tech Stack
 
-- **Runtime:** Node.js ≥ 20 (ESM)
-- **Language:** TypeScript
-- **Web:** Express
+- **Frontend:** Next.js (React), TypeScript, Tailwind CSS, shadcn/ui
+- **Backend:** Node.js (ESM), Express, TypeScript
 - **DB:** PostgreSQL (hand-written SQL in models)
-- **Validation:** Zod
-- **API Docs:** Swagger-UI (OpenAPI 3)
+- **Validation:** Zod (shared package)
+- **Docs:** Swagger-UI (OpenAPI 3)
 - **Migrations:** Drizzle Kit (schema & SQL migrations only)
-- **Lint/Format:** ESLint + Prettier
-- **Package Manager:** Yarn
+- **Package Manager:** Yarn Workspaces
 
-## Quickstart (minimal)
+## Monorepo Structure
 
-````bash
+apps/
+frontend/ # Next.js app (default dev: http://localhost:3001
+)
+backend/ # Express API (default dev: http://localhost:3000
+)
+packages/
+validation/ # Shared Zod schemas (e.g., userSchema, applicationSchema, helpers)
+
+
+## Quickstart (Dev)
+
+```bash
 # Clone & install
 git clone https://github.com/<your-user>/<your-repo>.git
-cd <your-repo> && yarn install
+cd <your-repo>
+yarn install
 
-# Configure environment
-cp .env.example .env   # fill DATABASE_URL, JWT_SECRET, etc.
+# Set up env files
+cp apps/backend/.env.example apps/backend/.env
+cp apps/frontend/.env.example apps/frontend/.env.local
 
-# Migrate DB & run
-yarn db:migrate
-yarn dev
-# API:     http://localhost:3000
-# Swagger: http://localhost:3000/api/docs
+# Run backend (Port 3000)
+yarn workspace @bewerbungsmanager/backend dev
 
-flowchart LR
-  Client -->|HTTP/JSON + Bearer JWT| API[Express Router]
-  subgraph Server
-    API --> MW[Middleware\n(auth, Zod validation, error handler)]
-    MW --> C[Controllers]
-    C --> M[Model layer\n(parameterized SQL)]
-    M --> DB[(PostgreSQL)]
-    C --> FS[(File storage\nUPLOAD_DIR)]
-    API --> DOCS[Swagger-UI\n(/api/docs)]
-  end
+# Run frontend (Port 3001) in a second terminal
+yarn workspace @bewerbungsmanager/frontend dev
 
-# Runtime
+```
+
+## Environment Variables 
+
+```bash
+
+backend (apps/backend/.env)
+Runtime
 NODE_ENV=development
 PORT=3000
 
-# PostgreSQL
-# Format: postgres://USER:PASSWORD@HOST:PORT/DBNAME
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/bewerbungsmanager
+# PostgreSQL (PG_* recommended)
+PGHOST=localhost
+PGPORT=5432
+PGDATABASE=bewerbungsmanager
+PGUSER=postgres
+PGPASSWORD=postgres
 
-# Authentication
+# Auth
 JWT_SECRET=change-me
 JWT_EXPIRES_IN=2h
 
@@ -70,106 +79,51 @@ JWT_EXPIRES_IN=2h
 UPLOAD_DIR=./uploads
 MAX_FILE_SIZE=10485760
 
-# CORS (frontend origin)
-CORS_ORIGIN=http://localhost:5173
+# CORS (for dev: frontend on 3001)
+CORS_ORIGIN=http://localhost:3001
 
-### Using `.env.example`
+frontend (apps/frontend/.env.local)
+Call backend directly (dev)
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api
 
-This repository includes a `.env.example`. Duplicate it and fill in your own values:
+Using .env.example
+Provide .env.example files in each app directory to document required variables:
 
-```bash
-cp .env.example .env
-# Windows (PowerShell):
-copy .env.example .env
+# backend
+cp apps/backend/.env.example apps/backend/.env
 
+# frontend
+cp apps/frontend/.env.example apps/frontend/.env.local
 
-# Development
-yarn dev           # start with tsx watch (src/server.ts)
-yarn build         # compile TypeScript to /dist
-yarn start         # run compiled app from dist/server.js
-yarn lint          # run ESLint on src/**/*.ts
+.gitignore (root) should exclude env files:
+# Environment Variables
+.env*
+apps/*/.env*
+packages/*/.env*
 
-# Database / migrations (Drizzle Kit used only for schema & SQL migrations)
-yarn db            # start PostgreSQL service (Linux/WSL: sudo service postgresql start)
-yarn db:generate   # build + generate a new migration after schema changes
-yarn db:migrate    # apply pending migrations
+Development
+# Frontend
+yarn workspace @bewerbungsmanager/frontend dev
+yarn workspace @bewerbungsmanager/frontend build
+yarn workspace @bewerbungsmanager/frontend start
+yarn workspace @bewerbungsmanager/frontend lint
 
-# Convenience
-yarn all           # run "yarn db" and "yarn dev" in parallel (requires 'concurrently')
+# Backend
+yarn workspace @bewerbungsmanager/backend dev
+yarn workspace @bewerbungsmanager/backend build
+yarn workspace @bewerbungsmanager/backend start
+yarn workspace @bewerbungsmanager/backend lint
 
+Database / Migrations (Drizzle Kit)
+# Make sure PostgreSQL is running (Linux/WSL example)
+sudo service postgresql start
 
-src/
-  app.ts
-  errors.ts
-  server.ts
-  swagger.ts
-  controllers/
-    application/
-      applicationController.ts
-      noteController.ts
-      attachmentController.ts
-    user/
-      userController.ts
-  db/
-    schema/
-      application.ts
-      attachment.ts
-      index.ts
-      note.ts
-      timeline.ts
-      user.ts
-    db.ts
-  middleware/
-    authenticateToken.ts
-    errorHandler.ts
-    upload.ts
-  models/
-    application/
-      applicationModel.ts
-      noteModel.ts
-      attachmentModel.ts
-    user/
-      userModel.ts
-  routes/
-    application/
-      applicationRoutes.ts
-      attachmentRoutes.ts
-      noteRoutes.ts
-    user/
-      userRoutes.ts
-  swagger/
-    application/
-      application.yaml
-      attachment.yaml
-      note.yaml
-    user/
-      user.yaml
-  types/
-    application/
-      application.ts
-      attachment.ts
-      note.ts
-    express/
-      index.d.ts
-    user/
-      user.ts
-  utils/
-    fileSniff.ts
-    hash.ts
-    mappers.ts
-    storage.ts
-  validation/
-    application/
-      applicationSchema.ts
-      attachmentSchema.ts
-      noteSchema.ts
-    helpers/
-      zodHelpers.ts
-    user/
-      userSchema.ts
-  uploads/              # local storage (gitignored)
-drizzle/
+# Generate a new migration after schema changes
+yarn workspace @bewerbungsmanager/backend db:generate
 
+# Apply pending migrations
+yarn workspace @bewerbungsmanager/backend db:migrate
 
-
-````
+API Documentation
+Swagger-UI is served at: http://localhost:3000/api/docs (dev)
+OpenAPI specs organized per resource (applications, notes, attachments, user)
