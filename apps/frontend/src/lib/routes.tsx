@@ -41,7 +41,7 @@ export function navStateFor(pathname: string | null, hasToken: boolean) {
   const inDash = isDashboardArea(pathname);
 
   return {
-    showLoginRegister: !hasToken && !onAuth && inPublic,
+    showLoginRegister: !onAuth && inPublic,
     showLogout: hasToken && !onAuth && inDash,
   };
 }

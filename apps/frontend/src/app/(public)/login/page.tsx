@@ -22,9 +22,10 @@ import { parseJson } from "@/lib/http";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { login as loginService } from "@/services/userApi";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api";
-const AFTER_LOGIN_PATH = "/"; // Path to redirect to after login
+const AFTER_LOGIN_PATH = "/profile"; // Path to redirect to after login
 
 export default function LoginPage() {
   const router = useRouter();
@@ -48,48 +49,20 @@ export default function LoginPage() {
     setServerMessage(null);
 
     try {
-      const res = await fetch(`${API_BASE}/user/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // keep if backend sets cookies
-        body: JSON.stringify(data),
-      });
-
-      // Safe JSON parsing (doesn't throw on empty body)
-      const body = await parseJson<ApiErrorBody & { token?: string }>(res);
-
-      if (!res.ok) {
-        // Auth failed (do not reveal which field is wrong)
-        if (res.status === 401) {
-          setServerError(body?.message ?? "Invalid email or password");
-          return;
-        }
-
-        // Backend validation error with Zod issues
-        if (res.status === 400) {
-          const hit = applyIssuesToFields(body?.issues, setError, ["email", "password"]);
-          if (!hit) setServerError(body?.message ?? "Login failed");
-          return;
-        }
-
-        // Any other server error
-        setServerError(body?.message ?? "Login failed");
-        return;
-      }
-
-      // Success: If the API returns a token store it in localStorage tokens
-      if (body?.token) localStorage.setItem("authToken", body.token);
+      // Call login service (stores token)
+      await loginService({ email: data.email, password: data.password });
 
       setServerMessage("Welcome back!");
       reset({ password: "", email: data.email });
 
-      // Gentle redirect after short delay
-      setTimeout(() => router.push(AFTER_LOGIN_PATH), 600);
-    } catch {
-      setServerError("Network error. Please try again.");
+      // Redirect to profile or other page
+      router.replace(AFTER_LOGIN_PATH);
+    } catch (e: any) {
+      // Try to parse known API error format
+      setServerError(e?.message ?? "Login failed");
     }
   };
-
+  
   return (
     <main className="flex min-h-screen justify-center items-start pt-16 md:pt-32 px-4">
       <Card className="w-full max-w-sm">

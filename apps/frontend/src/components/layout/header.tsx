@@ -10,7 +10,6 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const hasToken = !!getToken();
-
   const { showLoginRegister, showLogout } = navStateFor(pathname, hasToken);
 
   function onLogout() {
