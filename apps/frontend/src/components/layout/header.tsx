@@ -1,13 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import { shouldShowAuthLinks } from "@/lib/routes";
+import { getToken, clearToken } from "@/lib/http";
+import { navStateFor } from "@/lib/routes";
 
 export default function Header() {
   const pathname = usePathname();
-  const showLinks = shouldShowAuthLinks(pathname);
+  const router = useRouter();
+  const hasToken = !!getToken();
+
+  const { showLoginRegister, showLogout } = navStateFor(pathname, hasToken);
+
+  function onLogout() {
+    clearToken();
+    router.push("/login");
+  }
 
   return (
     <header className="w-full border-b border-border bg-background text-foreground">
@@ -17,7 +26,7 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-4">
-          {showLinks && (
+          {showLoginRegister && (
             <>
               <Link href="/login" className="text-sm font-medium hover:underline">
                 Login
@@ -30,6 +39,17 @@ export default function Header() {
               </Link>
             </>
           )}
+
+          {showLogout && (
+            <button
+              onClick={onLogout}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              aria-label="Logout"
+            >
+              Logout
+            </button>
+          )}
+
           <ModeToggle />
         </div>
       </div>

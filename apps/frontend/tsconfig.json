@@ -23,7 +23,8 @@
       "@/*": ["src/*"],
       "@components/*": ["src/components/*"],
       "@lib/*": ["src/lib/*"],
-      "@shared/*": ["../packages/shared/src/*"],
+      "@services/*": ["services/*"],
+      "@shared": ["../../packages/shared/src/index.ts"],
       "@validation/*": ["../../packages/shared/src/validation/*"]
     }
   },
