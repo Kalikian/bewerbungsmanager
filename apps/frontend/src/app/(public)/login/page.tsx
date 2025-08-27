@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { login as loginService } from "@/services/userApi";
 
-const AFTER_LOGIN_PATH = "/profile"; // Path to redirect to after login
+const AFTER_LOGIN_PATH = "/applications"; // Path to redirect to after login
 
 export default function LoginPage() {
   const router = useRouter();

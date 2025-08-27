@@ -35,8 +35,8 @@ export default function Header() {
             </Link>
           </Button>
           <Button asChild size="sm" variant="ghost">
-            <Link href="/dashboard" prefetch={false}>
-              Dashboard
+            <Link href="/applications" prefetch={false}>
+              Applications
             </Link>
           </Button>
         </div>

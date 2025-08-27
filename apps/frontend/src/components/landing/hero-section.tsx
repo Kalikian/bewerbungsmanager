@@ -39,7 +39,7 @@ const HeroSection = () => {
           {isAuthed ? (
             <>
               <Button asChild>
-                <Link href="/dashboard" prefetch={false}>Go to Dashboard</Link>
+                <Link href="/applications" prefetch={false}>Go to Applications</Link>
               </Button>
               <Button variant="outline" asChild>
                 <Link href="#features">Explore features</Link>

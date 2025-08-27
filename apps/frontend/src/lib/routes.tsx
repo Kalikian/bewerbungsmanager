@@ -7,7 +7,7 @@ export const PUBLIC_EXACT = new Set<string>(["/"]); // Landing
 export const PUBLIC_PREFIXES: string[] = ["/marketing"];
 
 // Dashboard area where logout should be shown
-export const DASHBOARD_PREFIXES: string[] = ["/profile", "/applications", "/dashboard"];
+export const APP_PREFIXES: string[] = ["/profile", "/applications", "/dashboard"];
 
 /* -------------------------------------------------------------- */
 
@@ -28,7 +28,7 @@ export function isPublicArea(pathname: string | null): boolean {
 
 export function isDashboardArea(pathname: string | null): boolean {
   if (!pathname) return false;
-  return matchesAnyPrefix(pathname, DASHBOARD_PREFIXES);
+  return matchesAnyPrefix(pathname, APP_PREFIXES);
 }
 
 // Provides a compact view for the header
