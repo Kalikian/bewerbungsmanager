@@ -1,6 +1,17 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { getToken } from "@/lib/http";
 
 export default function CtaSection() {
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    setAuthed(!!getToken());
+  }, []);
+
   return (
     <section className="bg-accent text-accent-foreground py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
@@ -11,9 +22,19 @@ export default function CtaSection() {
           Start organizing your job applications today and stay on top of every opportunity.
         </p>
         <div className="mt-8 flex justify-center">
-          <Button size="lg" asChild>
-            <a href="/register">Get Started</a>
-          </Button>
+          {authed ? (
+            <Button size="lg" asChild>
+              <Link href="/applications" prefetch={false}>
+                Go to Applications
+              </Link>
+            </Button>
+          ) : (
+            <Button size="lg" asChild>
+              <Link href="/register" prefetch={false}>
+                Get Started
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
     </section>
