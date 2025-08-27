@@ -34,6 +34,11 @@ export default function Header() {
               Home
             </Link>
           </Button>
+          <Button asChild size="sm" variant="ghost">
+            <Link href="/dashboard" prefetch={false}>
+              Dashboard
+            </Link>
+          </Button>
         </div>
         <div className="flex items-center gap-2">
           {showLoginRegister && (

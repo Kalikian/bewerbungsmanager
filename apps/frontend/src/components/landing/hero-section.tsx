@@ -1,7 +1,15 @@
-import React from "react";
+"use client";
+
+import React, { use } from "react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { getToken} from "@/lib/http";
+import { useEffect, useState } from "react";
 
 const HeroSection = () => {
+  
+  const [isAuthed, setIsAuthed] = useState(false);
+  useEffect(() => { setIsAuthed(!!getToken()); }, []);
   return (
     <section className="bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 py-24 text-center">
@@ -27,13 +35,26 @@ const HeroSection = () => {
         </p>
 
         {/* Call-to-action buttons */}
-        <div className="mt-8 flex gap-4">
-          <Button asChild>
-            <a href="/register">Get Started</a>
-          </Button>
-          <Button variant="outline" asChild>
-            <a href="#features">Learn More</a>
-          </Button>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          {isAuthed ? (
+            <>
+              <Button asChild>
+                <Link href="/dashboard" prefetch={false}>Go to Dashboard</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="#features">Explore features</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button asChild>
+                <Link href="/register" prefetch={false}>Get Started</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/login" prefetch={false}>Log in</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </section>
