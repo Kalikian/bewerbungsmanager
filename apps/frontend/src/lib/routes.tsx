@@ -26,7 +26,7 @@ export function isPublicArea(pathname: string | null): boolean {
   return matchesAnyPrefix(pathname, PUBLIC_PREFIXES);
 }
 
-export function isDashboardArea(pathname: string | null): boolean {
+export function isAppArea(pathname: string | null): boolean {
   if (!pathname) return false;
   return matchesAnyPrefix(pathname, APP_PREFIXES);
 }
@@ -38,10 +38,16 @@ export function isDashboardArea(pathname: string | null): boolean {
 export function navStateFor(pathname: string | null, hasToken: boolean) {
   const onAuth = isAuthPage(pathname);
   const inPublic = isPublicArea(pathname);
-  const inDash = isDashboardArea(pathname);
+  const inApp = isAppArea(pathname);
 
   return {
-    showLoginRegister: !onAuth && inPublic,
-    showLogout: hasToken && !onAuth && inDash,
+    // Show Login/Register only if not authed, not on /login or /register
+    showLoginRegister: !hasToken && !onAuth && inPublic,
+
+    // Always show Logout when authed (except on auth pages)
+    showLogout: hasToken && !onAuth,
+
+    // Shortcut to Applications visible everywhere except on auth pages
+    showAppShortcut: hasToken && !onAuth,
   };
 }
