@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { Button } from "@/components/ui/button";
 import { getToken, clearToken } from "@/lib/http";
 import { navStateFor } from "@/lib/routes";
 import { useEffect, useState } from "react";
@@ -27,33 +28,33 @@ export default function Header() {
   return (
     <header className="w-full border-b border-border bg-background text-foreground">
       <div className="mx-auto px-8 py-4 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold hover:opacity-90">
-          Bewerbungsmanager
-        </Link>
-
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Button asChild size="sm" variant="ghost">
+            <Link href="/" prefetch={false}>
+              Home
+            </Link>
+          </Button>
+        </div>
+        <div className="flex items-center gap-2">
           {showLoginRegister && (
             <>
-              <Link href="/login" className="text-sm font-medium hover:underline">
-                Login
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-              >
-                Register
-              </Link>
+              <Button asChild size="sm" variant="ghost">
+                <Link href="/login" prefetch={false}>
+                  Login
+                </Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/register" prefetch={false}>
+                  Register
+                </Link>
+              </Button>
             </>
           )}
 
           {showLogout && (
-            <button
-              onClick={onLogout}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-              aria-label="Logout"
-            >
+            <Button onClick={onLogout} size="sm" variant="ghost" aria-label="Logout">
               Logout
-            </button>
+            </Button>
           )}
 
           <ModeToggle />

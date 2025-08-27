@@ -5,6 +5,16 @@ const HeroSection = () => {
   return (
     <section className="bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 py-24 text-center">
+        {/* Eyebrow / Produkt-Titel */}
+        <div className="mb-3">
+          <span
+            className="inline-flex items-center rounded-full border px-4 py-1.5
+                   text-sm md:text-base font-semibold tracking-wide
+                   text-muted-foreground"
+          >
+            Bewerbungsmanager
+          </span>
+        </div>
         {/* Headline */}
         <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
           Manage your job applications with ease

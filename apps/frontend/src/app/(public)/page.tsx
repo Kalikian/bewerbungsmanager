@@ -7,7 +7,7 @@ import CtaSection from "@/components/landing/cta-section";
 
 export default function HomePage() {
   return (
-    <main>
+    <main id="main" className="mx-auto max-w-7xl px-8 py-8">
       <HeroSection />
       <FeatureSection />
       <HowItWorksSection />
