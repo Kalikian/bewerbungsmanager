@@ -22,7 +22,7 @@ export default function Header() {
   function onLogout() {
     clearToken();
     setIsAuthed(false);
-    router.push("/login");
+    router.push("/");
   }
 
   return (

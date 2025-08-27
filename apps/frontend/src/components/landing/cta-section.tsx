@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button";
 import { getToken } from "@/lib/http";
 
 export default function CtaSection() {
-  const [authed, setAuthed] = useState(false);
+  const [Isauthed, setIsAuthed] = useState(false);
 
-  useEffect(() => {
-    setAuthed(!!getToken());
+    useEffect(() => {
+    const update = () => setIsAuthed(!!getToken());
+    update(); 
+    window.addEventListener("auth:changed", update);
+    return () => window.removeEventListener("auth:changed", update);
   }, []);
 
   return (
@@ -22,7 +25,7 @@ export default function CtaSection() {
           Start organizing your job applications today and stay on top of every opportunity.
         </p>
         <div className="mt-8 flex justify-center">
-          {authed ? (
+          {Isauthed ? (
             <Button size="lg" asChild>
               <Link href="/applications" prefetch={false}>
                 Go to Applications

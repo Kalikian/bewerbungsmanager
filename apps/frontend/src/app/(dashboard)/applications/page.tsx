@@ -9,7 +9,7 @@ export default function ApplicationsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!getToken()) router.replace("/login");
+    if (!getToken()) router.replace("/");
   }, [router]);
 
   return (

@@ -9,7 +9,13 @@ import { useEffect, useState } from "react";
 const HeroSection = () => {
   
   const [isAuthed, setIsAuthed] = useState(false);
-  useEffect(() => { setIsAuthed(!!getToken()); }, []);
+    useEffect(() => {
+    const update = () => setIsAuthed(!!getToken());
+    update(); 
+    window.addEventListener("auth:changed", update);
+    return () => window.removeEventListener("auth:changed", update);
+  }, []);
+  
   return (
     <section className="bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 py-24 text-center">
