@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../context/authProvider';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../../../context/authProvider";
 
 export default function ProfilePage() {
   const { user, loading, refreshMe } = useAuth();
@@ -11,7 +11,7 @@ export default function ProfilePage() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!loading && !user) {
-      router.replace('/login');
+      router.replace("/login");
     }
   }, [loading, user, router]);
 
@@ -31,11 +31,15 @@ export default function ProfilePage() {
       <h1 className="text-2xl font-semibold tracking-tight">Profil</h1>
 
       <div className="rounded-xl border p-5 bg-card text-card-foreground shadow-sm space-y-2">
-        <div><span className="font-medium">User-ID:</span> {user.id}</div>
-        <div><span className="font-medium">E-Mail:</span> {user.email}</div>
         <div>
-          <span className="font-medium">Name:</span>{' '}
-          {(user as any).firstName ?? '—'} {(user as any).lastName ?? ''}
+          <span className="font-medium">User-ID:</span> {user.id}
+        </div>
+        <div>
+          <span className="font-medium">E-Mail:</span> {user.email}
+        </div>
+        <div>
+          <span className="font-medium">Name:</span> {(user as any).firstName ?? "—"}{" "}
+          {(user as any).lastName ?? ""}
         </div>
       </div>
 

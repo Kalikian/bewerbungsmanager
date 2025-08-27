@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { cn } from "@/lib/utils";
 
 import { loginUserSchema, type LoginUserInput } from "@validation/user/userSchema";
@@ -24,7 +23,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { login as loginService } from "@/services/userApi";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api";
 const AFTER_LOGIN_PATH = "/profile"; // Path to redirect to after login
 
 export default function LoginPage() {
@@ -58,11 +56,19 @@ export default function LoginPage() {
       // Redirect to profile or other page
       router.replace(AFTER_LOGIN_PATH);
     } catch (e: any) {
-      // Try to parse known API error format
-      setServerError(e?.message ?? "Login failed");
+      try {
+        const body = await parseJson<ApiErrorBody>(e?.body);
+        if (body?.issues) {
+          applyIssuesToFields(body.issues, setError, ["email", "password"]);
+        } else {
+          setServerError(e?.message ?? "Login failed");
+        }
+      } catch {
+        setServerError(e?.message ?? "Login failed");
+      }
     }
   };
-  
+
   return (
     <main className="flex min-h-screen justify-center items-start pt-16 md:pt-32 px-4">
       <Card className="w-full max-w-sm">

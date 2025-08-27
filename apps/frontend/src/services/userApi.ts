@@ -1,13 +1,13 @@
 // src/services/userApi.ts
-import { http, setToken } from '@lib/http';
-import type { LoginUser, UserDB } from '@shared';
+import { http, setToken } from "@lib/http";
+import type { LoginUser, UserDB } from "@shared";
 
-export type UserProfile = Omit<UserDB, 'password'>;
+export type UserProfile = Omit<UserDB, "password">;
 
 // POST /api/user/login -> { token }
 export async function login(data: LoginUser): Promise<string> {
-  const res = await http<{ message?: string; token: string }>('/user/login', {
-    method: 'POST',
+  const res = await http<{ message?: string; token: string }>("/user/login", {
+    method: "POST",
     body: JSON.stringify(data),
   });
   setToken(res.token);
@@ -16,5 +16,5 @@ export async function login(data: LoginUser): Promise<string> {
 
 // GET /api/user/account -> UserProfile
 export async function getAccount(): Promise<UserProfile> {
-  return http<UserProfile>('/user/account');
+  return http<UserProfile>("/user/account");
 }

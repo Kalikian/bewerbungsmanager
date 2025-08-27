@@ -5,15 +5,22 @@ import { usePathname, useRouter } from "next/navigation";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { getToken, clearToken } from "@/lib/http";
 import { navStateFor } from "@/lib/routes";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const hasToken = !!getToken();
-  const { showLoginRegister, showLogout } = navStateFor(pathname, hasToken);
+  const [isAuthed, setIsAuthed] = useState(false);
+
+  useEffect(() => {
+    setIsAuthed(!!getToken());
+  }, [pathname]);
+
+  const { showLoginRegister, showLogout } = navStateFor(pathname, isAuthed);
 
   function onLogout() {
     clearToken();
+    setIsAuthed(false);
     router.push("/login");
   }
 

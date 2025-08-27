@@ -1,7 +1,7 @@
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ??
   process.env.NEXT_PUBLIC_API_BASE_URL ?? // e.g. http://localhost:3000/api
-  '';
+  "";
 // Robust JSON parsing for fetch responses.
 export async function parseJson<T = any>(res: Response): Promise<T> {
   const text = await res.text();
@@ -21,8 +21,8 @@ export function clearToken() {
 
 // A fetch wrapper that adds base URL, headers, auth token, and error handling.
 export async function http<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
-  const base =  API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
-  const url = `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+  const base = API_BASE.endsWith("/") ? API_BASE.slice(0, -1) : API_BASE;
+  const url = `${base}${path.startsWith("/") ? "" : "/"}${path}`;
   const headers = new Headers(init.headers);
 
   // Add JSON content type if body is present and no content type is set
