@@ -51,7 +51,7 @@ export default function Header() {
               </Button>
             </>
           )}
-          {showLogout && <UserDropdown/>}
+          {showLogout && <UserDropdown />}
           <ModeToggle />
         </div>
       </div>

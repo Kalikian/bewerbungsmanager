@@ -49,7 +49,6 @@ export default function LoginPage() {
     try {
       // Call login service (stores token)
       await loginService({ email: data.email, password: data.password });
-
       setServerMessage("Welcome back!");
       reset({ password: "", email: data.email });
 
