@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../context/authProvider";
+import type {UserPublic} from "@shared";
 
 export default function ProfilePage() {
   const { user, loading, refreshMe } = useAuth();
@@ -38,8 +39,8 @@ export default function ProfilePage() {
           <span className="font-medium">E-Mail:</span> {user.email}
         </div>
         <div>
-          <span className="font-medium">Name:</span> {(user as any).firstName ?? "—"}{" "}
-          {(user as any).lastName ?? ""}
+          <span className="font-medium">Name:</span> {(user as UserPublic ).firstName ?? "—"}{" "}
+          {(user as UserPublic).lastName ?? ""}
         </div>
       </div>
 

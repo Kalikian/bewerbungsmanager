@@ -3,12 +3,10 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getAccount, login as apiLogin } from "../services/userApi";
 import { clearToken, getToken } from "@lib/http";
-import type { UserDB } from "@shared";
-
-type UserProfile = Omit<UserDB, "password">;
+import type { UserPublic } from "@shared";
 
 type AuthContextValue = {
-  user: UserProfile | null;
+  user: UserPublic | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -18,7 +16,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<UserPublic | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshMe = useCallback(async () => {
