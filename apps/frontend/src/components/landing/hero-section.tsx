@@ -3,19 +3,18 @@
 import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { getToken} from "@/lib/http";
+import { getToken } from "@/lib/http";
 import { useEffect, useState } from "react";
 
 const HeroSection = () => {
-  
   const [isAuthed, setIsAuthed] = useState(false);
-    useEffect(() => {
+  useEffect(() => {
     const update = () => setIsAuthed(!!getToken());
-    update(); 
+    update();
     window.addEventListener("auth:changed", update);
     return () => window.removeEventListener("auth:changed", update);
   }, []);
-  
+
   return (
     <section className="bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 py-24 text-center">
@@ -45,7 +44,9 @@ const HeroSection = () => {
           {isAuthed ? (
             <>
               <Button asChild>
-                <Link href="/applications" prefetch={false}>Go to Applications</Link>
+                <Link href="/applications" prefetch={false}>
+                  Go to Applications
+                </Link>
               </Button>
               <Button variant="outline" asChild>
                 <Link href="#features">Explore features</Link>
@@ -54,10 +55,14 @@ const HeroSection = () => {
           ) : (
             <>
               <Button asChild>
-                <Link href="/register" prefetch={false}>Get Started</Link>
+                <Link href="/register" prefetch={false}>
+                  Get Started
+                </Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link href="/login" prefetch={false}>Log in</Link>
+                <Link href="/login" prefetch={false}>
+                  Log in
+                </Link>
               </Button>
             </>
           )}

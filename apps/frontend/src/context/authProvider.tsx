@@ -44,11 +44,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshMe();
   }, [refreshMe]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    await apiLogin({ email, password }); // login and store token
-    const me = await getAccount(); // get user profile
-    setUser(me);
-  }, []);
+  const login = useCallback(
+    async (email: string, password: string) => {
+      await apiLogin({ email, password }); // login and store token
+      await refreshMe();
+    },
+    [refreshMe],
+  );
 
   const logout = useCallback(() => {
     clearToken();

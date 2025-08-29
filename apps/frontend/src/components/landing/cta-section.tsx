@@ -8,9 +8,9 @@ import { getToken } from "@/lib/http";
 export default function CtaSection() {
   const [Isauthed, setIsAuthed] = useState(false);
 
-    useEffect(() => {
+  useEffect(() => {
     const update = () => setIsAuthed(!!getToken());
-    update(); 
+    update();
     window.addEventListener("auth:changed", update);
     return () => window.removeEventListener("auth:changed", update);
   }, []);

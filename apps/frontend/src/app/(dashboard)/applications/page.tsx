@@ -14,15 +14,10 @@ export default function ApplicationsPage() {
 
   return (
     <main id="main" className="mx-auto max-w-7xl px-6 py-8">
-      <PageHeader
-        title="Applications"
-        description="Create and manage your job applications"
-      />
+      <PageHeader title="Applications" description="Create and manage your job applications" />
 
       <div className="mt-6 rounded-lg border p-6">
-        <p className="text-sm text-muted-foreground">
-          Your applications will appear here.
-        </p>
+        <p className="text-sm text-muted-foreground">Your applications will appear here.</p>
       </div>
     </main>
   );

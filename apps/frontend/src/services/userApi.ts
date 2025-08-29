@@ -1,8 +1,6 @@
 // src/services/userApi.ts
 import { http, setToken } from "@lib/http";
-import type { LoginUser, UserDB } from "@shared";
-
-export type UserProfile = Omit<UserDB, "password">;
+import type { LoginUser, UserDB, UserPublic } from "@shared";
 
 // POST /api/user/login -> { token }
 export async function login(data: LoginUser): Promise<string> {
@@ -15,6 +13,6 @@ export async function login(data: LoginUser): Promise<string> {
 }
 
 // GET /api/user/account -> UserProfile
-export async function getAccount(): Promise<UserProfile> {
-  return http<UserProfile>("/user/account");
+export async function getAccount(): Promise<UserPublic> {
+  return http<UserPublic>("/user/account");
 }

@@ -1,3 +1,4 @@
+//components/layout/header.tsx
 "use client";
 
 import Link from "next/link";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getToken, clearToken } from "@/lib/http";
 import { navStateFor } from "@/lib/routes";
 import { useEffect, useState } from "react";
+import { UserDropdown } from "../ui/user-icon";
 
 export default function Header() {
   const pathname = usePathname();
@@ -19,15 +21,9 @@ export default function Header() {
 
   const { showLoginRegister, showLogout } = navStateFor(pathname, isAuthed);
 
-  function onLogout() {
-    clearToken();
-    setIsAuthed(false);
-    router.push("/");
-  }
-
   return (
     <header className="w-full border-b border-border bg-background text-foreground">
-      <div className="mx-auto px-8 py-4 flex items-center justify-between">
+      <div className="mx-auto px-2 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button asChild size="sm" variant="ghost">
             <Link href="/" prefetch={false}>
@@ -40,7 +36,7 @@ export default function Header() {
             </Link>
           </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {showLoginRegister && (
             <>
               <Button asChild size="sm" variant="ghost">
@@ -55,13 +51,7 @@ export default function Header() {
               </Button>
             </>
           )}
-
-          {showLogout && (
-            <Button onClick={onLogout} size="sm" variant="ghost" aria-label="Logout">
-              Logout
-            </Button>
-          )}
-
+          {showLogout && <UserDropdown/>}
           <ModeToggle />
         </div>
       </div>
