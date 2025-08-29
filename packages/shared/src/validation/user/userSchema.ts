@@ -111,3 +111,12 @@ export const userIdParamSchema = z
     id: z.coerce.number().int().positive({ message: 'Invalid user id' }),
   })
   .strict();
+
+  /* ------------------------- for public(frontend) use ------------------------- */
+export const userPublicSchema = z.object({
+  id: z.number().int().positive(),
+  email: Email, 
+  firstName: Name,
+  lastName: Name,
+}).strict();
+export type UserPublic = z.output<typeof userPublicSchema>;
