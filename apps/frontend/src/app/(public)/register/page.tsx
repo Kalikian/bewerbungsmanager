@@ -100,7 +100,6 @@ export default function RegisterPage() {
       // reset the form and go straight to /login.
       reset({ firstName: "", lastName: "", email: "", password: "" });
       router.push("/login");
-
     } catch {
       setServerError("Network error. Please try again.");
     }

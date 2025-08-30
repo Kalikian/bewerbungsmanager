@@ -42,7 +42,6 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginUserInput) => {
-
     try {
       // Call login service (stores token)
       await loginService({ email: data.email, password: data.password });

@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           <Header />
           <main className="flex-grow">{children}</main>
-          <Toaster richColors/>
+          <Toaster richColors />
           <Footer />
         </ThemeProvider>
       </body>

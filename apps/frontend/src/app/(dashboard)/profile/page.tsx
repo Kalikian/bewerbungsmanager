@@ -7,8 +7,13 @@ import { getToken, clearToken } from "@/lib/http";
 
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogTrigger, DialogContent,
-  DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@components/ui/confirm-dialog";
 import { Label } from "@/components/ui/label";
@@ -111,8 +116,12 @@ export default function ProfilePage() {
       <h1 className="text-2xl font-semibold tracking-tight">Profil</h1>
 
       <div className="rounded-xl border p-5 bg-card text-card-foreground shadow-sm space-y-2">
-        <div><span className="font-medium">User-ID:</span> {user.id}</div>
-        <div><span className="font-medium">E-Mail:</span> {user.email}</div>
+        <div>
+          <span className="font-medium">User-ID:</span> {user.id}
+        </div>
+        <div>
+          <span className="font-medium">E-Mail:</span> {user.email}
+        </div>
         <div>
           <span className="font-medium">Name:</span>{" "}
           {(user.firstName ?? "—") + " " + (user.lastName ?? "")}
@@ -166,7 +175,11 @@ export default function ProfilePage() {
               {error && <p className="text-sm text-destructive">{error}</p>}
 
               {success && (
-                <p className="text-sm text-emerald-600 flex items-center gap-2" role="status" aria-live="polite">
+                <p
+                  className="text-sm text-emerald-600 flex items-center gap-2"
+                  role="status"
+                  aria-live="polite"
+                >
                   <CheckCircle2 className="h-4 w-4" />
                   Profile updated successfully
                 </p>
@@ -188,7 +201,10 @@ export default function ProfilePage() {
         <ConfirmDialog
           title="Delete profile permanently?"
           description={
-            <>This action <b>cannot</b> be undone. Your account and all associated data will be deleted.</>
+            <>
+              This action <b>cannot</b> be undone. Your account and all associated data will be
+              deleted.
+            </>
           }
           confirmText="Yes, delete"
           cancelText="Cancel"
@@ -196,9 +212,11 @@ export default function ProfilePage() {
           successText="Profile deleted successfully"
           successDelayMs={2000}
           onConfirmAction={onConfirmDelete}
-          onSuccessAction={() => router.replace("/")}  // redirect only after the dialog closes
+          onSuccessAction={() => router.replace("/")} // redirect only after the dialog closes
         >
-          <Button variant="destructive" size="sm">Delete profile</Button>
+          <Button variant="destructive" size="sm">
+            Delete profile
+          </Button>
         </ConfirmDialog>
       </div>
     </div>
