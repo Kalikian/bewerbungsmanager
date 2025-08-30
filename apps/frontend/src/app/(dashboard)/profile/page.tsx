@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../context/authProvider";
-import { getToken } from "@/lib/http";
+import { getToken, clearToken } from "@/lib/http";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@components/ui/confirm-dialog"
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2 } from "lucide-react";
@@ -98,6 +99,23 @@ export default function ProfilePage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+    // ---- Delete account action (für ConfirmDialog) ----
+  async function onConfirmDelete() {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/account`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${getToken()}` },
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body?.message ?? "Löschen fehlgeschlagen.");
+    }
+
+    clearToken();
+    router.replace("/");
   }
 
   return (
@@ -184,6 +202,22 @@ export default function ProfilePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+        {/* Delete account: ConfirmDialog */}
+        <ConfirmDialog
+          title="Delete profile permanently?"
+          description={
+            <>This action <b>cannot</b> be undone. Your account and all associated data will be deleted.</>
+          }
+          confirmText="Yes, delete"
+          cancelText="Cancel"
+          variant="destructive"
+          onConfirmAction={onConfirmDelete}
+          // Optional: requireText="DELETE"
+        >
+          <Button variant="destructive" size="sm">Delete profile</Button>
+        </ConfirmDialog>
+        
     </div>
   );
 }
