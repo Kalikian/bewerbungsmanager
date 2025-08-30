@@ -7,26 +7,20 @@ import { getToken, clearToken } from "@/lib/http";
 
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
+  Dialog, DialogTrigger, DialogContent,
+  DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { ConfirmDialog } from "@components/ui/confirm-dialog"
+import { ConfirmDialog } from "@components/ui/confirm-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2 } from "lucide-react";
-
 import { updateUserNameSchema } from "@shared";
 
 export default function ProfilePage() {
   const { user, loading, refreshMe } = useAuth();
   const router = useRouter();
 
-  /* ---------- Dialog-State ---------- */
+  // ----- edit dialog state -----
   const [open, setOpen] = useState(false);
   const [firstName, setFirstName] = useState(user?.firstName ?? "");
   const [lastName, setLastName] = useState(user?.lastName ?? "");
@@ -34,18 +28,15 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Redirect, wenn nicht eingeloggt
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
   }, [loading, user, router]);
 
-  // Formfelder synchron halten, wenn der User neu geladen wird
   useEffect(() => {
     setFirstName(user?.firstName ?? "");
     setLastName(user?.lastName ?? "");
   }, [user?.firstName, user?.lastName]);
 
-  // Jetzt erst die frühen Returns
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-10">
@@ -59,14 +50,12 @@ export default function ProfilePage() {
     setError(null);
     setSuccess(false);
 
-    const result = updateUserNameSchema.safeParse({ firstName, lastName });
-    if (!result.success) {
-      const msg = result.error.issues[0]?.message ?? "Invalid input.";
+    const parsed = updateUserNameSchema.safeParse({ firstName, lastName });
+    if (!parsed.success) {
+      const msg = parsed.error.issues[0]?.message ?? "Invalid input.";
       setError(msg);
       return;
     }
-
-    const payload = result.data;
 
     try {
       setSubmitting(true);
@@ -77,7 +66,7 @@ export default function ProfilePage() {
           Authorization: `Bearer ${getToken()}`,
         },
         credentials: "include",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(parsed.data),
       });
 
       if (!res.ok) {
@@ -86,36 +75,35 @@ export default function ProfilePage() {
         return;
       }
 
-      await refreshMe(); // User reload
-      setSuccess(true); //Success
-      // Close dialog after timeout & reset status
+      await refreshMe();
+      setSuccess(true);
       setTimeout(() => {
         setOpen(false);
         setSuccess(false);
         setError(null);
-      }, 1000);
+      }, 2000);
     } catch {
-      setError("Network error. Please try again later..");
+      setError("Network error. Please try again later.");
     } finally {
       setSubmitting(false);
     }
   }
 
-    // ---- Delete account action (für ConfirmDialog) ----
+  // ---- delete account (used by ConfirmDialog) ----
   async function onConfirmDelete() {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/account`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/account`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${getToken()}` },
       credentials: "include",
     });
 
     if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body?.message ?? "Löschen fehlgeschlagen.");
+      const txt = await res.text().catch(() => "");
+      throw new Error(txt || `Deletion failed (HTTP ${res.status})`);
     }
 
+    // success → clear token; DO NOT navigate here (dialog handles it)
     clearToken();
-    router.replace("/");
   }
 
   return (
@@ -123,87 +111,80 @@ export default function ProfilePage() {
       <h1 className="text-2xl font-semibold tracking-tight">Profil</h1>
 
       <div className="rounded-xl border p-5 bg-card text-card-foreground shadow-sm space-y-2">
-        <div>
-          <span className="font-medium">User-ID:</span> {user.id}
-        </div>
-        <div>
-          <span className="font-medium">E-Mail:</span> {user.email}
-        </div>
+        <div><span className="font-medium">User-ID:</span> {user.id}</div>
+        <div><span className="font-medium">E-Mail:</span> {user.email}</div>
         <div>
           <span className="font-medium">Name:</span>{" "}
           {(user.firstName ?? "—") + " " + (user.lastName ?? "")}
         </div>
       </div>
 
-      {/* Edit-Button → Modal */}
-      <Dialog
-        open={open}
-        onOpenChange={(v) => {
-          setOpen(v);
-          setError(null);
-          setSuccess(false);
-        }}
-      >
-        <DialogTrigger asChild>
-          <Button size="sm">Update profile</Button>
-        </DialogTrigger>
+      <div className="flex gap-6">
+        {/* Update profile dialog */}
+        <Dialog
+          open={open}
+          onOpenChange={(v) => {
+            setOpen(v);
+            setError(null);
+            setSuccess(false);
+          }}
+        >
+          <DialogTrigger asChild>
+            <Button size="sm">Update profile</Button>
+          </DialogTrigger>
 
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Update profile</DialogTitle>
-            <DialogDescription>
-              Change your first or last name. Empty fields remain unchanged.
-            </DialogDescription>
-          </DialogHeader>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Update profile</DialogTitle>
+              <DialogDescription>
+                Change your first or last name. Empty fields remain unchanged.
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="grid gap-4 py-2">
-            <div className="grid gap-2">
-              <Label htmlFor="firstName">first name</Label>
-              <Input
-                id="firstName"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                autoComplete="given-name"
-                disabled={submitting || success}
-              />
+            <div className="grid gap-4 py-2">
+              <div className="grid gap-2">
+                <Label htmlFor="firstName">first name</Label>
+                <Input
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  autoComplete="given-name"
+                  disabled={submitting || success}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="lastName">last name</Label>
+                <Input
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  autoComplete="family-name"
+                  disabled={submitting || success}
+                />
+              </div>
+
+              {error && <p className="text-sm text-destructive">{error}</p>}
+
+              {success && (
+                <p className="text-sm text-emerald-600 flex items-center gap-2" role="status" aria-live="polite">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Profile updated successfully
+                </p>
+              )}
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="lastName">last name</Label>
-              <Input
-                id="lastName"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                autoComplete="family-name"
-                disabled={submitting || success}
-              />
-            </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
+                Cancel
+              </Button>
+              <Button onClick={onSubmit} disabled={submitting || success}>
+                {submitting ? "updating…" : "Update"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-            {success && (
-              <p
-                className="text-sm text-emerald-600 flex items-center gap-2"
-                role="status"
-                aria-live="polite"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                Profile updated successfully
-              </p>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
-              Cancel
-            </Button>
-            <Button onClick={onSubmit} disabled={submitting}>
-              {submitting ? "updating…" : "Update"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-        {/* Delete account: ConfirmDialog */}
+        {/* Delete account dialog (consistent success-in-dialog + 2s delay) */}
         <ConfirmDialog
           title="Delete profile permanently?"
           description={
@@ -212,12 +193,14 @@ export default function ProfilePage() {
           confirmText="Yes, delete"
           cancelText="Cancel"
           variant="destructive"
+          successText="Profile deleted successfully"
+          successDelayMs={2000}
           onConfirmAction={onConfirmDelete}
-          // Optional: requireText="DELETE"
+          onSuccessAction={() => router.replace("/")}  // redirect only after the dialog closes
         >
           <Button variant="destructive" size="sm">Delete profile</Button>
         </ConfirmDialog>
-        
+      </div>
     </div>
   );
 }

@@ -88,7 +88,7 @@ export default function RegisterPage() {
       // Success UX: show short success message, clear form, then redirect to login
       setServerMessage("Account created. You can now sign in.");
       reset({ firstName: "", lastName: "", email: "", password: "" });
-      setTimeout(() => router.push("/login"), 1000);
+      setTimeout(() => router.push("/login"), 2000);
     } catch {
       setServerError("Network error. Please try again.");
     }
