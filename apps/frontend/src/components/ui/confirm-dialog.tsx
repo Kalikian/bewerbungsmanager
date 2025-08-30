@@ -26,9 +26,13 @@ import { CheckCircle2 } from "lucide-react";
  * - onConfirmAction: async/void callback; called when the action is confirmed
  * - variant?: "default" | "destructive" (styles the action button)
  * - requireText?: Optional confirmation text to type (e.g., "DELETE")
- * - successText?: Message shown after success (green)
- * - successDelayMs?: Delay before auto-close on success (default 1000)
- * - onSuccessAction?: callback fired after the dialog auto-closes on success
+ *
+ * - showInlineSuccess?: Show a success phase *inside* the dialog (default: false)
+ *   NOTE: When false (default), prefer showing success via a global toast at the call site.
+ * - successText?: Message shown after success (green, only if showInlineSuccess === true)
+ * - successDelayMs?: Delay before auto-close on inline success (default 1000)
+ *
+ * - onSuccessAction?: callback fired after the dialog closes on success
  * - open?/onOpenChangeAction?: optionally controlled from the parent
  */
 export function ConfirmDialog({
@@ -40,6 +44,7 @@ export function ConfirmDialog({
   onConfirmAction,
   variant = "default",
   requireText,
+  showInlineSuccess = false,
   successText = "Action completed successfully",
   successDelayMs = 1000,
   onSuccessAction,
@@ -54,8 +59,12 @@ export function ConfirmDialog({
   onConfirmAction: () => Promise<void> | void; // not "onConfirm" to avoid Next 15 warning
   variant?: "default" | "destructive";
   requireText?: string;
-  successText?: string;
+
+  // toast-based success; inline phase opt-in only
+  showInlineSuccess?: boolean;
+  successText?: string; // only used if showInlineSuccess === true
   successDelayMs?: number;
+
   onSuccessAction?: () => void;
   open?: boolean;
   onOpenChangeAction?: (open: boolean) => void;
@@ -72,7 +81,7 @@ export function ConfirmDialog({
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [typed, setTyped] = React.useState("");
-  const [success, setSuccess] = React.useState(false);
+  const [success, setSuccess] = React.useState(false); // used only for optional inline success
 
   const mustType = typeof requireText === "string" && requireText.length > 0;
   const confirmDisabled = busy || success || (mustType && typed.trim() !== requireText);
@@ -81,21 +90,22 @@ export function ConfirmDialog({
     setError(null);
     try {
       setBusy(true);
-      await onConfirmAction(); // perform action (e.g. DELETE)
+      await onConfirmAction(); // perform action (e.g., DELETE)
 
-      // show success INSIDE the dialog (green), keep it open
-      setSuccess(true);
-
-      // auto-close after delay, then optional callback
-      window.setTimeout(
-        () => {
+      if (showInlineSuccess && successText) {
+        setSuccess(true);
+        window.setTimeout(() => {
           setOpen(false);
           setSuccess(false);
           setTyped("");
-          onSuccessAction?.();
-        },
-        Math.max(0, successDelayMs),
-      );
+          onSuccessAction?.(); // caller can show a toast here if desired
+        }, Math.max(0, successDelayMs));
+      } else {
+        setOpen(false);
+        setSuccess(false);
+        setTyped("");
+        onSuccessAction?.();
+      }
     } catch (e: any) {
       setError(e?.message ?? "Action failed.");
     } finally {
@@ -139,8 +149,7 @@ export function ConfirmDialog({
         )}
 
         {error && <p className="text-sm text-destructive mt-2">{error}</p>}
-
-        {success && (
+        {showInlineSuccess && success && (
           <p
             className="text-sm text-emerald-600 mt-2 flex items-center gap-2"
             role="status"
@@ -154,7 +163,6 @@ export function ConfirmDialog({
         <AlertDialogFooter className="mt-4">
           <AlertDialogCancel disabled={busy || success}>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
-            // prevent Radix auto-close so we can keep dialog open
             onClick={(e) => {
               e.preventDefault();
               handleConfirm();

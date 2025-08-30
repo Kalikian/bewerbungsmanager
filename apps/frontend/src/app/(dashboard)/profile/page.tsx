@@ -18,8 +18,8 @@ import {
 import { ConfirmDialog } from "@components/ui/confirm-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2 } from "lucide-react";
 import { updateUserNameSchema } from "@shared";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
   const { user, loading, refreshMe } = useAuth();
@@ -31,7 +31,6 @@ export default function ProfilePage() {
   const [lastName, setLastName] = useState(user?.lastName ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -53,7 +52,6 @@ export default function ProfilePage() {
 
   async function onSubmit() {
     setError(null);
-    setSuccess(false);
 
     const parsed = updateUserNameSchema.safeParse({ firstName, lastName });
     if (!parsed.success) {
@@ -81,12 +79,10 @@ export default function ProfilePage() {
       }
 
       await refreshMe();
-      setSuccess(true);
-      setTimeout(() => {
-        setOpen(false);
-        setSuccess(false);
-        setError(null);
-      }, 2000);
+
+      toast.success("Profile updated successfully");
+      setOpen(false);
+
     } catch {
       setError("Network error. Please try again later.");
     } finally {
@@ -106,8 +102,7 @@ export default function ProfilePage() {
       const txt = await res.text().catch(() => "");
       throw new Error(txt || `Deletion failed (HTTP ${res.status})`);
     }
-
-    // success → clear token; DO NOT navigate here (dialog handles it)
+    // success → clear token; navigation and toast are handled in onSuccessAction
     clearToken();
   }
 
@@ -135,7 +130,6 @@ export default function ProfilePage() {
           onOpenChange={(v) => {
             setOpen(v);
             setError(null);
-            setSuccess(false);
           }}
         >
           <DialogTrigger asChild>
@@ -158,7 +152,7 @@ export default function ProfilePage() {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   autoComplete="given-name"
-                  disabled={submitting || success}
+                  disabled={submitting /* || success */} // ✅ no success state
                 />
               </div>
               <div className="grid gap-2">
@@ -168,36 +162,26 @@ export default function ProfilePage() {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   autoComplete="family-name"
-                  disabled={submitting || success}
+                  disabled={submitting /* || success */} // ✅ no success state
                 />
               </div>
 
+              {/* Keep inline error (only success moved to toast) */}
               {error && <p className="text-sm text-destructive">{error}</p>}
-
-              {success && (
-                <p
-                  className="text-sm text-emerald-600 flex items-center gap-2"
-                  role="status"
-                  aria-live="polite"
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  Profile updated successfully
-                </p>
-              )}
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
                 Cancel
               </Button>
-              <Button onClick={onSubmit} disabled={submitting || success}>
+              <Button onClick={onSubmit} disabled={submitting /* || success */}>
                 {submitting ? "updating…" : "Update"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Delete account dialog (consistent success-in-dialog + 2s delay) */}
+        {/* Delete account dialog — success handled via toast + redirect */}
         <ConfirmDialog
           title="Delete profile permanently?"
           description={
@@ -209,10 +193,12 @@ export default function ProfilePage() {
           confirmText="Yes, delete"
           cancelText="Cancel"
           variant="destructive"
-          successText="Profile deleted successfully"
-          successDelayMs={2000}
           onConfirmAction={onConfirmDelete}
-          onSuccessAction={() => router.replace("/")} // redirect only after the dialog closes
+          onSuccessAction={() => {
+            window.dispatchEvent(new Event("auth:changed"));
+            toast.success("Your profile has been deleted.");
+            router.replace("/");
+          }}
         >
           <Button variant="destructive" size="sm">
             Delete profile
