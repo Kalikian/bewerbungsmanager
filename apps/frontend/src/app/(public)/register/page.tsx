@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 import { createUserSchema, type CreateUserInput } from "@validation/user/userSchema";
 import { applyIssuesToFields, type ApiErrorBody } from "@/lib/api-errors";
@@ -29,6 +30,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [serverMessage, setServerMessage] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const {
     register,
@@ -43,9 +45,12 @@ export default function RegisterPage() {
     reValidateMode: "onChange",
   });
 
+  const disabled = isSubmitting || success;
+
   const onSubmit = async (data: CreateUserInput) => {
     setServerError(null);
     setServerMessage(null);
+    setSuccess(false);
 
     try {
       const res = await fetch(`${API_BASE}/user/register`, {
@@ -85,10 +90,17 @@ export default function RegisterPage() {
         return;
       }
 
-      // Success UX: show short success message, clear form, then redirect to login
-      setServerMessage("Account created. You can now sign in.");
+      // Use a global toast for success and navigate immediately.
+      // This keeps the UI snappy and the toast persists across navigation.
+      toast.success("Account created", {
+        description: "You can now sign in.",
+        duration: 2000,
+      });
+
+      // reset the form and go straight to /login.
       reset({ firstName: "", lastName: "", email: "", password: "" });
-      setTimeout(() => router.push("/login"), 2000);
+      router.push("/login");
+
     } catch {
       setServerError("Network error. Please try again.");
     }
@@ -116,6 +128,7 @@ export default function RegisterPage() {
                   aria-describedby="firstName-error"
                   className={cn(!!errors.firstName && "border-red-500 focus-visible:ring-red-500")}
                   {...register("firstName")}
+                  disabled={disabled}
                 />
                 <p
                   id="firstName-error"
@@ -136,6 +149,7 @@ export default function RegisterPage() {
                   aria-describedby="lastName-error"
                   className={cn(!!errors.lastName && "border-red-500 focus-visible:ring-red-500")}
                   {...register("lastName")}
+                  disabled={disabled}
                 />
                 <p
                   id="lastName-error"
@@ -158,6 +172,7 @@ export default function RegisterPage() {
                 aria-describedby="email-error"
                 className={cn(!!errors.email && "border-red-500 focus-visible:ring-red-500")}
                 {...register("email")}
+                disabled={disabled}
               />
               <p
                 id="email-error"
@@ -179,6 +194,7 @@ export default function RegisterPage() {
                 aria-describedby="password-error"
                 className={cn(!!errors.password && "border-red-500 focus-visible:ring-red-500")}
                 {...register("password")}
+                disabled={disabled}
               />
               <p
                 id="password-error"
@@ -189,6 +205,12 @@ export default function RegisterPage() {
               </p>
             </div>
 
+            {serverError && (
+              <p className="text-sm text-destructive" role="alert">
+                {serverError}
+              </p>
+            )}
+
             <div className="text-sm opacity-80">
               Already have an account?{" "}
               <Link href="/login" className="underline">
@@ -198,20 +220,9 @@ export default function RegisterPage() {
           </CardContent>
 
           <CardFooter className="pt-6 flex flex-col gap-2">
-            <p
-              className={cn(
-                "text-sm h-5 text-center transition-opacity",
-                serverError
-                  ? "text-red-600 opacity-100"
-                  : serverMessage
-                    ? "text-green-600 opacity-100"
-                    : "opacity-0",
-              )}
-            >
-              {serverError ?? serverMessage ?? "placeholder"}
-            </p>
+            <p className={cn("text-sm h-5 text-center opacity-0 select-none")}>placeholder</p>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={disabled}>
               {isSubmitting ? "Creating..." : "Create Account"}
             </Button>
           </CardFooter>

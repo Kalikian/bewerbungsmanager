@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import "../styles/globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           <Header />
           <main className="flex-grow">{children}</main>
+          <Toaster />
           <Footer />
         </ThemeProvider>
       </body>
