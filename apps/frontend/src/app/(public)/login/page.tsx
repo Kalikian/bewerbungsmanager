@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import { loginUserSchema, type LoginUserInput } from "@validation/user/userSchema";
@@ -27,8 +28,6 @@ const AFTER_LOGIN_PATH = "/applications"; // Path to redirect to after login
 
 export default function LoginPage() {
   const router = useRouter();
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [serverMessage, setServerMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -43,27 +42,35 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginUserInput) => {
-    setServerError(null);
-    setServerMessage(null);
 
     try {
       // Call login service (stores token)
       await loginService({ email: data.email, password: data.password });
-      setServerMessage("Welcome back!");
+
+      // Success feedback via toast (visible across route change if <Toaster/> is in root layout)
+      toast.success("Welcome back!");
+
+      // Clear only the password for convenience
       reset({ password: "", email: data.email });
 
-      // Redirect to profile or other page
+      // Redirect to the post-login page
       router.replace(AFTER_LOGIN_PATH);
     } catch (e: any) {
+      // Try to read a structured error body (zod issues, message, etc.)
       try {
         const body = await parseJson<ApiErrorBody>(e?.body);
+
         if (body?.issues) {
+          // Field-level validation errors go onto the form
           applyIssuesToFields(body.issues, setError, ["email", "password"]);
+          // Optional: also surface a toast to explain there are field errors
+          toast.error(body?.message ?? "Please fix the highlighted fields.");
         } else {
-          setServerError(e?.message ?? "Login failed");
+          toast.error(body?.message ?? e?.message ?? "Login failed");
         }
       } catch {
-        setServerError(e?.message ?? "Login failed");
+        // Fallback if error body is not JSON
+        toast.error(e?.message ?? "Login failed");
       }
     }
   };
@@ -132,19 +139,6 @@ export default function LoginPage() {
           </CardContent>
 
           <CardFooter className="pt-6 flex flex-col gap-2">
-            <p
-              className={cn(
-                "text-sm h-5 text-center transition-opacity",
-                serverError
-                  ? "text-red-600 opacity-100"
-                  : serverMessage
-                    ? "text-green-600 opacity-100"
-                    : "opacity-0",
-              )}
-            >
-              {serverError ?? serverMessage ?? "placeholder"}
-            </p>
-
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Signing in..." : "Sign In"}
             </Button>
