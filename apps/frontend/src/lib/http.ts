@@ -38,7 +38,9 @@ export class HttpError extends Error {
 
 /** Type guard to check for HttpError */
 export function isHttpError(e: unknown): e is HttpError {
-  return e instanceof Error && (e as any).name === "HttpError" && typeof (e as any).status === "number";
+  return (
+    e instanceof Error && (e as any).name === "HttpError" && typeof (e as any).status === "number"
+  );
 }
 
 // A fetch wrapper that adds base URL, headers, auth token, and error handling.
@@ -70,7 +72,9 @@ export async function http<T = unknown>(path: string, init: RequestInit = {}): P
 
     // Prefer backend message fields commonly used in APIs
     const message =
-      (typeof body === "object" && body && (body.message || body.error || body.detail || body.title)) ||
+      (typeof body === "object" &&
+        body &&
+        (body.message || body.error || body.detail || body.title)) ||
       (typeof body === "string" && body) ||
       res.statusText ||
       `HTTP ${res.status}`;

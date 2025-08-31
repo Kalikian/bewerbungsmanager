@@ -94,12 +94,15 @@ export function ConfirmDialog({
 
       if (showInlineSuccess && successText) {
         setSuccess(true);
-        window.setTimeout(() => {
-          setOpen(false);
-          setSuccess(false);
-          setTyped("");
-          onSuccessAction?.(); // caller can show a toast here if desired
-        }, Math.max(0, successDelayMs));
+        window.setTimeout(
+          () => {
+            setOpen(false);
+            setSuccess(false);
+            setTyped("");
+            onSuccessAction?.(); // caller can show a toast here if desired
+          },
+          Math.max(0, successDelayMs),
+        );
       } else {
         setOpen(false);
         setSuccess(false);

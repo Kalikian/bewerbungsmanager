@@ -82,7 +82,6 @@ export default function ProfilePage() {
 
       toast.success("Profile updated successfully");
       setOpen(false);
-
     } catch {
       setError("Network error. Please try again later.");
     } finally {
