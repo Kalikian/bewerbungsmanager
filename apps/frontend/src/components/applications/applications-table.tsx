@@ -232,17 +232,19 @@ function AddAttachmentDialog({ app, onAdded }: { app: Application; onAdded: () =
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
         Add attachment
       </Button>
-      <Dialog open={open} onOpenChange={(o) => { if (!busy) setOpen(o); }}>
+      <Dialog
+        open={open}
+        onOpenChange={(o) => {
+          if (!busy) setOpen(o);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add attachment · {app.job_title}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
-            <input
-              type="file"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
+            <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
             <Textarea
               rows={4}
               placeholder="Optional description…"
@@ -414,4 +416,3 @@ export default function ApplicationsTable() {
     </Card>
   );
 }
-

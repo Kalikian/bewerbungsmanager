@@ -1,7 +1,7 @@
 // apps/frontend/components/applications/application.edit.form.tsx
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState /* removed: useRef */ } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm, Controller, type Resolver } from "react-hook-form";
@@ -120,6 +120,7 @@ function toFormDefaults(a: Application | null): FormValues {
 export default function ApplicationEditForm({ id }: { id: number }) {
   const [entity, setEntity] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isResetting, setIsResetting] = useState(false); // UI state for the Reset button
   const router = useRouter();
 
   // Form setup (use update schema; all fields optional)
@@ -138,7 +139,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
     setError,
   } = form;
 
-  // Load the application by id
+  // Load the application by id and prefill the form
   const load = useCallback(async () => {
     const token = getToken();
     if (!token) {
@@ -158,7 +159,8 @@ export default function ApplicationEditForm({ id }: { id: number }) {
         setEntity(null);
       } else {
         setEntity(body);
-        reset(toFormDefaults(body)); // prefill
+        const defaults = toFormDefaults(body);
+        reset(defaults); // prefill the form with fresh values from the server
       }
     } catch (e) {
       console.error(e);
@@ -172,6 +174,17 @@ export default function ApplicationEditForm({ id }: { id: number }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // 🔹 Reset handler: re-fetch from the server and reset the form (like a lightweight page refresh)
+  async function handleReset() {
+    try {
+      setIsResetting(true);
+      await load();
+      toast("Form reset to the original values.");
+    } finally {
+      setIsResetting(false);
+    }
+  }
 
   // Submit: parse to payload and PATCH
   async function onSubmit(values: FormValues) {
@@ -218,7 +231,6 @@ export default function ApplicationEditForm({ id }: { id: number }) {
 
       toast.success("Application updated");
       window.dispatchEvent(new Event("applications:changed"));
-      // Optional: reload the entity to reflect canonical values
       router.replace("/applications");
     } catch (e) {
       console.error(e);
@@ -248,7 +260,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
             {/* Basic info */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="job_title">Job title</Label>
+                <Label htmlFor="job_title">Job title *</Label>
                 <Input
                   id="job_title"
                   {...register("job_title")}
@@ -260,7 +272,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="company">Company</Label>
+                <Label htmlFor="company">Company *</Label>
                 <Input id="company" {...register("company")} aria-invalid={!!errors.company} />
                 {errors.company && <p className="text-sm text-red-600">{errors.company.message}</p>}
               </div>
@@ -423,6 +435,16 @@ export default function ApplicationEditForm({ id }: { id: number }) {
 
             {/* Actions */}
             <div className="flex justify-end gap-3">
+              {/* 🔹 Reset button: refetch & reset the form to the server state */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleReset}
+                disabled={isSubmitting || loading || isResetting}
+              >
+                {isResetting ? "Resetting…" : "Reset"}
+              </Button>
+
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Saving…" : "Save changes"}
               </Button>
