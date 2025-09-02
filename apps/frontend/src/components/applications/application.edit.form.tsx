@@ -4,33 +4,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import {
-  useForm,
-  Controller,
-  type Resolver,
-} from "react-hook-form";
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
-import {
-  STATUSES,
-  updateApplicationSchema,
-} from "@shared";
+import { STATUSES, updateApplicationSchema } from "@shared";
 
 import { API_BASE, getToken, parseJson } from "@/lib/http";
-import {
-  applyIssues,
-  messageFromApiError,
-  type ApiErrorBody,
-} from "@/lib/api-errors";
+import { applyIssues, messageFromApiError, type ApiErrorBody } from "@/lib/api-errors";
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -59,8 +42,8 @@ type Application = {
   job_url?: string | null;
   salary?: number | null;
   work_model?: string | null;
-  start_date?: string | null;            // "YYYY-MM-DD" or null
-  application_deadline?: string | null;  // "YYYY-MM-DD" or null
+  start_date?: string | null; // "YYYY-MM-DD" or null
+  application_deadline?: string | null; // "YYYY-MM-DD" or null
   created_at?: string | null;
   updated_at?: string | null;
 };
@@ -236,7 +219,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
       toast.success("Application updated");
       window.dispatchEvent(new Event("applications:changed"));
       // Optional: reload the entity to reflect canonical values
-       router.replace("/applications");
+      router.replace("/applications");
     } catch (e) {
       console.error(e);
       toast.error("Network error while updating");
@@ -266,8 +249,14 @@ export default function ApplicationEditForm({ id }: { id: number }) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="job_title">Job title</Label>
-                <Input id="job_title" {...register("job_title")} aria-invalid={!!errors.job_title} />
-                {errors.job_title && <p className="text-sm text-red-600">{errors.job_title.message}</p>}
+                <Input
+                  id="job_title"
+                  {...register("job_title")}
+                  aria-invalid={!!errors.job_title}
+                />
+                {errors.job_title && (
+                  <p className="text-sm text-red-600">{errors.job_title.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -301,13 +290,25 @@ export default function ApplicationEditForm({ id }: { id: number }) {
 
               <div className="grid gap-2">
                 <Label htmlFor="job_source">Job source</Label>
-                <Input id="job_source" {...register("job_source")} aria-invalid={!!errors.job_source} />
-                {errors.job_source && <p className="text-sm text-red-600">{errors.job_source.message}</p>}
+                <Input
+                  id="job_source"
+                  {...register("job_source")}
+                  aria-invalid={!!errors.job_source}
+                />
+                {errors.job_source && (
+                  <p className="text-sm text-red-600">{errors.job_source.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="job_url">Job URL</Label>
-                <Input id="job_url" type="url" placeholder="https://…" {...register("job_url")} aria-invalid={!!errors.job_url} />
+                <Input
+                  id="job_url"
+                  type="url"
+                  placeholder="https://…"
+                  {...register("job_url")}
+                  aria-invalid={!!errors.job_url}
+                />
                 {errors.job_url && <p className="text-sm text-red-600">{errors.job_url.message}</p>}
               </div>
 
@@ -322,13 +323,22 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("salary")}
                   aria-invalid={!!errors.salary}
                 />
-                {errors.salary && <p className="text-sm text-red-600">{errors.salary.message as any}</p>}
+                {errors.salary && (
+                  <p className="text-sm text-red-600">{errors.salary.message as any}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="work_model">Work model</Label>
-                <Input id="work_model" placeholder="onsite / hybrid / remote" {...register("work_model")} aria-invalid={!!errors.work_model} />
-                {errors.work_model && <p className="text-sm text-red-600">{errors.work_model.message}</p>}
+                <Input
+                  id="work_model"
+                  placeholder="onsite / hybrid / remote"
+                  {...register("work_model")}
+                  aria-invalid={!!errors.work_model}
+                />
+                {errors.work_model && (
+                  <p className="text-sm text-red-600">{errors.work_model.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -344,20 +354,39 @@ export default function ApplicationEditForm({ id }: { id: number }) {
 
               <div className="grid gap-2 sm:col-span-1">
                 <Label htmlFor="contact_name">Name</Label>
-                <Input id="contact_name" {...register("contact_name")} aria-invalid={!!errors.contact_name} />
-                {errors.contact_name && <p className="text-sm text-red-600">{errors.contact_name.message}</p>}
+                <Input
+                  id="contact_name"
+                  {...register("contact_name")}
+                  aria-invalid={!!errors.contact_name}
+                />
+                {errors.contact_name && (
+                  <p className="text-sm text-red-600">{errors.contact_name.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2 sm:col-span-1">
                 <Label htmlFor="contact_email">Email</Label>
-                <Input id="contact_email" type="email" {...register("contact_email")} aria-invalid={!!errors.contact_email} />
-                {errors.contact_email && <p className="text-sm text-red-600">{errors.contact_email.message}</p>}
+                <Input
+                  id="contact_email"
+                  type="email"
+                  {...register("contact_email")}
+                  aria-invalid={!!errors.contact_email}
+                />
+                {errors.contact_email && (
+                  <p className="text-sm text-red-600">{errors.contact_email.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2 sm:col-span-1">
                 <Label htmlFor="contact_phone">Phone</Label>
-                <Input id="contact_phone" {...register("contact_phone")} aria-invalid={!!errors.contact_phone} />
-                {errors.contact_phone && <p className="text-sm text-red-600">{errors.contact_phone.message}</p>}
+                <Input
+                  id="contact_phone"
+                  {...register("contact_phone")}
+                  aria-invalid={!!errors.contact_phone}
+                />
+                {errors.contact_phone && (
+                  <p className="text-sm text-red-600">{errors.contact_phone.message}</p>
+                )}
               </div>
             </fieldset>
 
@@ -365,14 +394,30 @@ export default function ApplicationEditForm({ id }: { id: number }) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="start_date">Start date</Label>
-                <Input id="start_date" type="date" {...register("start_date")} aria-invalid={!!errors.start_date} />
-                {errors.start_date && <p className="text-sm text-red-600">{errors.start_date.message as any}</p>}
+                <Input
+                  id="start_date"
+                  type="date"
+                  {...register("start_date")}
+                  aria-invalid={!!errors.start_date}
+                />
+                {errors.start_date && (
+                  <p className="text-sm text-red-600">{errors.start_date.message as any}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="application_deadline">Application deadline</Label>
-                <Input id="application_deadline" type="date" {...register("application_deadline")} aria-invalid={!!errors.application_deadline} />
-                {errors.application_deadline && <p className="text-sm text-red-600">{errors.application_deadline.message as any}</p>}
+                <Input
+                  id="application_deadline"
+                  type="date"
+                  {...register("application_deadline")}
+                  aria-invalid={!!errors.application_deadline}
+                />
+                {errors.application_deadline && (
+                  <p className="text-sm text-red-600">
+                    {errors.application_deadline.message as any}
+                  </p>
+                )}
               </div>
             </div>
 
