@@ -158,7 +158,18 @@ export default function ApplicationForm() {
         start_date: "",
         application_deadline: "",
       });
-      router.refresh();
+      // Notify lists to reload
+      window.dispatchEvent(new Event("applications:changed"));
+      // If we're on /applications/new -> go back to the list
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname.startsWith("/applications/new")
+      ) {
+        router.replace("/applications");
+      } else {
+        // If the form is ever embedded on the list page itself, just refresh it
+        router.refresh();
+      }
     } catch (err) {
       console.error(err);
       toast.error("Network error. Please try again.");
