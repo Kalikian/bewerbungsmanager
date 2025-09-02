@@ -88,6 +88,7 @@ export default function ApplicationForm() {
     control,
     formState: { errors, isSubmitting },
     setError,
+    reset,
   } = form;
 
   // Submit handler:
@@ -142,7 +143,22 @@ export default function ApplicationForm() {
       }
 
       toast.success("Application created");
-      router.replace("/applications");
+            reset({
+        job_title: "",
+        company: "",
+        status: "open",
+        contact_name: "",
+        contact_email: "",
+        contact_phone: "",
+        address: "",
+        job_source: "",
+        job_url: "",
+        salary: undefined,
+        work_model: "",
+        start_date: "",
+        application_deadline: "",
+      });
+      router.refresh(); 
     } catch (err) {
       console.error(err);
       toast.error("Network error. Please try again.");
