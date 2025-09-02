@@ -7,9 +7,9 @@ export type ApiErrorIssue = {
 };
 
 export type ApiErrorBody = {
-  error?: string;       // e.g. 'UNAUTHORIZED', 'VALIDATION_ERROR'
-  code?: string;        // optional error identifier
-  message?: string;     // user-facing text
+  error?: string; // e.g. 'UNAUTHORIZED', 'VALIDATION_ERROR'
+  code?: string; // optional error identifier
+  message?: string; // user-facing text
   details?: ApiErrorIssue[]; // field-level issues (e.g. from Zod)
 };
 
