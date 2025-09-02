@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import {
   useForm,
@@ -136,6 +137,7 @@ function toFormDefaults(a: Application | null): FormValues {
 export default function ApplicationEditForm({ id }: { id: number }) {
   const [entity, setEntity] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   // Form setup (use update schema; all fields optional)
   const form = useForm<FormValues>({
@@ -234,7 +236,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
       toast.success("Application updated");
       window.dispatchEvent(new Event("applications:changed"));
       // Optional: reload the entity to reflect canonical values
-      await load();
+       router.replace("/applications");
     } catch (e) {
       console.error(e);
       toast.error("Network error while updating");
