@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { API_BASE, getToken, parseJson } from "@/lib/http";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,14 +14,33 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { STATUSES } from "@shared";
 
-// Expected shape from backend (snake_case like your schema)
+// Backend shape (snake_case)
 type Application = {
   id: number;
   job_title: string;
   company: string;
   status: (typeof STATUSES)[number];
+  job_source?: string | null;
+  job_url?: string | null;
+  contact_name?: string | null;
+  contact_email?: string | null;
   application_deadline?: string | null;
   created_at?: string | null;
 };
@@ -32,28 +50,9 @@ function toTs(d?: string | null) {
   const t = Date.parse(d);
   return Number.isFinite(t) ? t : 0;
 }
-
 function fmtDate(d?: string | null) {
   return d ? d.slice(0, 10) : "—";
 }
-
-/** Status badge variant mapping (tweak to your design) */
-function StatusBadge({ status }: { status: Application["status"] }) {
-  const variant =
-    status === "open" || status === "applied"
-      ? "secondary"
-      : status === "interview"
-      ? "default"
-      : status === "offer" || status === "contract"
-      ? "outline"
-      : "destructive"; // rejected | withdrawn -> bottom anyway
-  return <Badge variant={variant as any}>{status}</Badge>;
-}
-
-/** Sort rule:
- *  1) All except rejected/withdrawn at top by created_at DESC
- *  2) rejected/withdrawn at bottom by created_at DESC
- */
 function sortApplications(list: Application[]): Application[] {
   const archived = new Set(["rejected", "withdrawn"]);
   const head = list
@@ -63,6 +62,127 @@ function sortApplications(list: Application[]): Application[] {
     .filter((a) => archived.has(a.status))
     .sort((a, b) => toTs(b.created_at) - toTs(a.created_at));
   return [...head, ...tail];
+}
+
+/** Inline status changer with optimistic PATCH */
+function StatusCell({
+  id,
+  value,
+  onChanged,
+}: {
+  id: number;
+  value: Application["status"];
+  onChanged: (next: Application["status"]) => void;
+}) {
+  const [current, setCurrent] = useState(value);
+  useEffect(() => setCurrent(value), [value]);
+
+  async function update(next: Application["status"]) {
+    const prev = current;
+    setCurrent(next); // optimistic
+    const token = getToken();
+    try {
+      const res = await fetch(`${API_BASE}/applications/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({ status: next }),
+      });
+      if (!res.ok) {
+        setCurrent(prev);
+        const body = await parseJson<any>(res);
+        toast.error(body?.message ?? "Failed to update status");
+        return;
+      }
+      toast.success("Status updated");
+      onChanged(next);
+      // optional: window.dispatchEvent(new Event("applications:changed"));
+    } catch (e) {
+      setCurrent(prev);
+      toast.error("Network error");
+    }
+  }
+
+  return (
+    <Select value={current} onValueChange={(v) => update(v as any)}>
+      <SelectTrigger className="h-7 w-[110px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {STATUSES.map((s) => (
+          <SelectItem key={s} value={s}>
+            {s}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+/** Simple dialog to add a note to an application */
+function AddNoteDialog({ app, onAdded }: { app: Application; onAdded: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const disabled = !text.trim();
+
+  async function submit() {
+    const token = getToken();
+    try {
+      const res = await fetch(`${API_BASE}/applications/${app.id}/notes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({ text }),
+      });
+      const body = await parseJson<any>(res);
+      if (!res.ok) {
+        toast.error(body?.message ?? "Failed to add note");
+        return;
+      }
+      toast.success("Note added");
+      setOpen(false);
+      setText("");
+      onAdded();
+      // optional: window.dispatchEvent(new Event("applications:changed"));
+    } catch (e) {
+      toast.error("Network error");
+    }
+  }
+
+  return (
+    <>
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+        Add note
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add note · {app.job_title}</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            rows={6}
+            placeholder="Write your note…"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={submit} disabled={disabled}>
+              Save note
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
 export default function ApplicationsTable() {
@@ -86,8 +206,8 @@ export default function ApplicationsTable() {
       const raw = Array.isArray(body)
         ? body
         : Array.isArray((body as any)?.data)
-        ? (body as any).data
-        : [];
+          ? (body as any).data
+          : [];
       setItems(sortApplications(raw));
     } catch (e) {
       console.error(e);
@@ -98,17 +218,79 @@ export default function ApplicationsTable() {
     }
   }, []);
 
-  // initial load
   useEffect(() => {
     load();
   }, [load]);
 
-  // live refresh if other parts dispatch an event after create/update/delete
   useEffect(() => {
     const handler = () => load();
     window.addEventListener("applications:changed", handler);
     return () => window.removeEventListener("applications:changed", handler);
   }, [load]);
+
+  const hasData = !!items && items.length > 0;
+
+  const table = useMemo(() => {
+    if (!items) return null;
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Job title</TableHead>
+            <TableHead>Company</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="hidden xl:table-cell">Source</TableHead>
+            <TableHead className="hidden lg:table-cell">Contact</TableHead>
+            <TableHead>Deadline</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((a, idx) => (
+            <TableRow key={a.id}>
+              <TableCell className="font-medium">{a.job_title}</TableCell>
+              <TableCell>{a.company}</TableCell>
+              <TableCell>
+                <StatusCell
+                  id={a.id}
+                  value={a.status}
+                  onChanged={(next) => {
+                    setItems((prev) =>
+                      prev ? prev.map((x) => (x.id === a.id ? { ...x, status: next } : x)) : prev,
+                    );
+                  }}
+                />
+              </TableCell>
+              <TableCell className="hidden xl:table-cell">
+                {a.job_source ? a.job_source : "—"}
+              </TableCell>
+              <TableCell className="hidden lg:table-cell">
+                {a.contact_name || a.contact_email ? (
+                  <span className="text-sm text-muted-foreground">
+                    {a.contact_name ?? "—"}
+                    {a.contact_email ? ` · ${a.contact_email}` : ""}
+                  </span>
+                ) : (
+                  "—"
+                )}
+              </TableCell>
+              <TableCell>{fmtDate(a.application_deadline)}</TableCell>
+              <TableCell>{fmtDate(a.created_at)}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button size="sm" asChild>
+                    <a href={`/applications/${a.id}`}>Edit</a>
+                  </Button>
+                  <AddNoteDialog app={a} onAdded={load} />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  }, [items, load]);
 
   if (loading) {
     return (
@@ -122,13 +304,11 @@ export default function ApplicationsTable() {
     );
   }
 
-  if (!items || items.length === 0) {
+  if (!hasData) {
     return (
       <Card className="shadow-sm">
         <CardContent className="p-4 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            No applications yet.
-          </p>
+          <p className="text-sm text-muted-foreground">No applications yet.</p>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={load}>
               Refresh
@@ -144,36 +324,10 @@ export default function ApplicationsTable() {
 
   return (
     <Card className="shadow-sm">
-      <CardContent className="p-0 overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Job title</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Deadline</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((a) => (
-              <TableRow key={a.id}>
-                <TableCell className="font-medium">{a.job_title}</TableCell>
-                <TableCell>{a.company}</TableCell>
-                <TableCell><StatusBadge status={a.status} /></TableCell>
-                <TableCell>{fmtDate(a.application_deadline)}</TableCell>
-                <TableCell>{fmtDate(a.created_at)}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-      <CardContent className="p-4 border-t flex items-center justify-between">
+      <CardContent className="p-0 overflow-x-auto">{table}</CardContent>
+      <CardContent className="p-4 border-t flex items-center justify-end">
         <Button variant="outline" size="sm" onClick={load}>
           Refresh
-        </Button>
-        <Button size="sm" asChild>
-          <a href="/applications/new">New application</a>
         </Button>
       </CardContent>
     </Card>

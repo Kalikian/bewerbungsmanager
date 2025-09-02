@@ -143,7 +143,7 @@ export default function ApplicationForm() {
       }
 
       toast.success("Application created");
-            reset({
+      reset({
         job_title: "",
         company: "",
         status: "open",
@@ -158,7 +158,7 @@ export default function ApplicationForm() {
         start_date: "",
         application_deadline: "",
       });
-      router.refresh(); 
+      router.refresh();
     } catch (err) {
       console.error(err);
       toast.error("Network error. Please try again.");

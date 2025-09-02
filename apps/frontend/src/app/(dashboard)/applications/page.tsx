@@ -18,10 +18,7 @@ export default function ApplicationsPage() {
   return (
     <main id="main" className="mx-auto max-w-7xl px-6 py-8">
       <div className="flex items-start justify-between gap-4">
-        <PageHeader
-          title="Applications"
-          description="Create and manage your job applications"
-        />
+        <PageHeader title="Applications" description="Create and manage your job applications" />
         <div className="pt-2">
           <Button asChild>
             <a href="/applications/new">New application</a>
@@ -35,4 +32,3 @@ export default function ApplicationsPage() {
     </main>
   );
 }
-
