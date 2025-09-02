@@ -8,6 +8,9 @@ import { z } from 'zod';
 export const emptyToUndef = (val: unknown) =>
   typeof val === 'string' ? (val.trim() === '' ? undefined : val.trim()) : val;
 
+export const emptyToNull = (v: unknown) =>
+  v === "" || v === null ? null : v;
+
 /**
  * Preprocessor for date fields to normalize into YYYY-MM-DD format.
  * Returns undefined for empty values. Leaves invalid strings for regex to catch.

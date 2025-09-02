@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { emptyToUndef, toYYYYMMDD } from '../helpers/zodHelpers.js';
+import { emptyToUndef,emptyToNull, toYYYYMMDD } from '../helpers/zodHelpers.js';
 
 /* ------------------------- Constants / Enums ------------------------- */
 export const STATUSES = [
@@ -18,8 +18,8 @@ export const STATUSES = [
  * Email/URL use Zod v4 style (pipe to z.email/z.url).
  */
 const baseApplicationShapeOptional = {
-  job_title: z.preprocess(emptyToUndef, z.string().min(1).max(200).optional()),
-  company: z.preprocess(emptyToUndef, z.string().min(1).max(200).optional()),
+  job_title: z.preprocess(emptyToNull, z.string().min(1).max(200).optional()),
+  company: z.preprocess(emptyToNull, z.string().min(1).max(200).optional()),
   contact_name: z.preprocess(emptyToUndef, z.string().min(1).max(200).optional()),
   contact_email: z.preprocess(
     emptyToUndef,
@@ -72,7 +72,7 @@ export type CreateApplicationInput = z.infer<typeof createApplicationSchema>;
  * Using values-scan ensures that `{ job_title: "" }` (→ undefined) does NOT pass.
  */
 export const updateApplicationSchema = z
-  .object(baseApplicationShapeOptional)
+  .object(baseApplicationShapeOptional )
   .strict()
   .refine((obj) => Object.values(obj).some((v) => v !== undefined), {
     message: 'At least one field must be provided',

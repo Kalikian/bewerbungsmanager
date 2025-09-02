@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getToken } from "@/lib/http";
 import PageHeader from "@/components/layout/page-header";
-import ApplicationEditForm from "@/components/applications/application.edit.form";
+import ApplicationEditForm from "@/components/applications/application-edit-form";
 import { Button } from "@/components/ui/button";
 
 export default function EditApplicationPage() {
