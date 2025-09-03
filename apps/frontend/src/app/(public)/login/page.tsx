@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -17,8 +16,8 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { applyIssuesToFields, type ApiErrorBody } from "@/lib/api-errors";
-import { parseJson } from "@/lib/http";
+import { applyIssues, messageFromApiError, type ApiErrorBody } from "@/lib/api-errors";
+import { isHttpError } from "@/lib/http";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -54,23 +53,19 @@ export default function LoginPage() {
 
       // Redirect to the post-login page
       router.replace(AFTER_LOGIN_PATH);
-    } catch (e: any) {
-      // Try to read a structured error body (zod issues, message, etc.)
-      try {
-        const body = await parseJson<ApiErrorBody>(e?.body);
-
-        if (body?.issues) {
-          // Field-level validation errors go onto the form
-          applyIssuesToFields(body.issues, setError, ["email", "password"]);
-          // Optional: also surface a toast to explain there are field errors
-          toast.error(body?.message ?? "Please fix the highlighted fields.");
-        } else {
-          toast.error(body?.message ?? e?.message ?? "Login failed");
-        }
-      } catch {
-        // Fallback if error body is not JSON
-        toast.error(e?.message ?? "Login failed");
+    } catch (err) {
+      // Use our typed HttpError and helpers
+      if (isHttpError(err)) {
+        const body = err.body as ApiErrorBody | undefined;
+        // Map field-level errors from `details` to RHF (whitelist)
+        const hadFieldErrors = applyIssues(body, setError, ["email", "password"]);
+        // Build a good user-facing message
+        const msg = messageFromApiError(body, err.message || "Login failed");
+        // Only toast if there were no field errors (sonst doppelte Meldungen)
+        if (!hadFieldErrors) toast.error(msg);
+        return;
       }
+      toast.error("Login failed");
     }
   };
 

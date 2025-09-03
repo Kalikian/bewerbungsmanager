@@ -305,11 +305,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
 
               <div className="grid gap-2">
                 <Label htmlFor="company">Company *</Label>
-                <Input
-                  id="company"
-                  {...register("company")}
-                  aria-invalid={!!errors.company}
-                />
+                <Input id="company" {...register("company")} aria-invalid={!!errors.company} />
               </div>
 
               <div className="grid gap-2">
