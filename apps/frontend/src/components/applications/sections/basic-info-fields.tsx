@@ -80,8 +80,12 @@ export default function BasicInfoFields() {
           type="number"
           step="1"
           min="0"
-          placeholder="e.g. 55000"
-          {...register("salary")}
+          placeholder="e.g. 5000"
+          inputMode="numeric"
+          {...register("salary", {
+            // Keep empty string as undefined; let Zod/backend coerce non-empty
+            setValueAs: (v: unknown) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+          })}
           aria-invalid={!!errors.salary}
         />
         {errors.salary && <p className="text-sm text-red-600">{errors.salary.message as any}</p>}

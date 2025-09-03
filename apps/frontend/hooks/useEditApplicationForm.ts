@@ -1,76 +1,134 @@
+// @hooks/useEditApplicationForm.ts
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import type { Application } from "@shared";
+import { createApplicationSchema } from "@shared";
+
+import {
+  APPLICATION_DEFAULTS,
+  FIELD_WHITELIST,
+  type ApplicationFormValues,
+  type ApplicationPayload,
+} from "@/lib/applications/types";
+import { patchApplication } from "@/lib/applications/api";
 import { getToken, parseJson } from "@/lib/http";
 import { applyIssues, messageFromApiError, type ApiErrorBody } from "@/lib/api-errors";
 
-import { createApplicationSchema, updateApplicationSchema } from "@shared";
-import type { Application as AppEntity } from "@shared";
+/** Map backend entity -> UI form shape */
+function mapEntityToForm(e: Application): ApplicationFormValues {
+  return {
+    ...APPLICATION_DEFAULTS,
+    job_title: e.job_title ?? "",
+    company: e.company ?? "",
+    status: (e.status ?? "open") as ApplicationFormValues["status"],
+    contact_name: e.contact_name ?? "",
+    contact_email: e.contact_email ?? "",
+    contact_phone: e.contact_phone ?? "",
+    address: e.address ?? "",
+    job_source: e.job_source ?? "",
+    job_url: e.job_url ?? "",
+    salary: e.salary ?? undefined, // UI allows string|number|undefined; Zod will coerce
+    work_model: e.work_model ?? "",
+    start_date: e.start_date ? e.start_date.slice(0, 10) : "",
+    application_deadline: e.application_deadline ? e.application_deadline.slice(0, 10) : "",
+  };
+}
 
-import { patchApplication } from "@/lib/applications/api";
-import { toFormDefaults } from "@/lib/applications/transform";
-import { FIELD_WHITELIST, type FormValues } from "@/lib/applications/types";
+/** Normalize UI values to API payload via Zod (coerce strings, trim empties, etc.) */
+function normalize(ui: ApplicationFormValues): ApplicationPayload {
+  return createApplicationSchema.parse(ui);
+}
+
+/** Build a PATCH payload containing only changed fields (vs baseline UI values) */
+function buildPatchPayload(
+  baseUI: ApplicationFormValues,
+  nextUI: ApplicationFormValues,
+): Partial<ApplicationPayload> {
+  const base = normalize(baseUI);
+  const next = normalize(nextUI);
+
+  const patch: Partial<ApplicationPayload> = {};
+  (FIELD_WHITELIST as readonly string[]).forEach((key) => {
+    const k = key as keyof ApplicationPayload;
+    const a = base[k];
+    const b = next[k];
+    // shallow compare is enough here (only primitives)
+    const changed =
+      (a ?? undefined) !== (b ?? undefined) &&
+      // special case: numbers vs numeric strings already normalized by Zod,
+      // so only true changes remain.
+      true;
+    if (changed) patch[k] = b as any;
+  });
+
+  return patch;
+}
 
 export function useEditApplicationForm(
   id: number,
-  entity: AppEntity | null,
-  reload: () => Promise<void>,
+  entity: Application | null | undefined,
+  reload?: () => Promise<void>,
 ) {
   const router = useRouter();
-  const [isResetting, setIsResetting] = useState(false);
 
-  const defaultValues = useMemo(() => toFormDefaults(entity), [entity]);
-
-  // NOTE: Resolver = CREATE schema (same UX as new-form: inline errors for required fields)
-  const form = useForm<FormValues>({
-    resolver: zodResolver(createApplicationSchema) as unknown as Resolver<FormValues>,
+  // RHF instance with your UI types
+  const form = useForm<ApplicationFormValues>({
+    resolver: zodResolver(createApplicationSchema) as unknown as Resolver<ApplicationFormValues>,
+    // ^ if you have an update schema, you can swap it in; not required.
+    defaultValues: APPLICATION_DEFAULTS,
     mode: "onSubmit",
-    defaultValues,
-    values: defaultValues, // keep in sync when entity changes
   });
 
-  async function handleReset() {
-    setIsResetting(true);
-    try {
-      await reload();
-      toast("Form reset to the original values.");
-    } finally {
-      setIsResetting(false);
-    }
-  }
+  // Keep the last "pristine" UI snapshot for Reset & diff
+  const lastSyncedRef = useRef<ApplicationFormValues>(APPLICATION_DEFAULTS);
 
-  // NOTE: PATCH payload must come from UPDATE schema on RAW values (so '' → null can clear)
-  async function onSubmit() {
+  // Sync RHF whenever the server entity arrives/changes
+  useEffect(() => {
+    if (!entity) return;
+    const next = mapEntityToForm(entity);
+    lastSyncedRef.current = next; // update baseline
+    form.reset(next); // clears dirty/touched/errors too
+  }, [entity, form]);
+
+  // Submit: compute diff -> PATCH -> map errors -> reload on success
+  const onSubmit = useCallback(async () => {
     const token = getToken();
     if (!token) {
-      toast("Please log in to edit an application.");
+      toast("Please log in to update the application.");
       router.push("/login");
       return;
     }
 
-    const raw = form.getValues();
-
-    let payload: any;
+    // Build a minimal PATCH based on changes vs baseline
+    let patch: Partial<ApplicationPayload>;
     try {
-      payload = updateApplicationSchema.parse(raw);
+      patch = buildPatchPayload(lastSyncedRef.current, form.getValues());
     } catch {
-      // inline errors already shown via resolver
+      toast.error("Validation failed. Please check your inputs.");
+      return;
+    }
+
+    if (Object.keys(patch).length === 0) {
+      toast.message("No changes to save.");
       return;
     }
 
     try {
-      const res = await patchApplication(id, token, payload);
-      const body = await parseJson<ApiErrorBody>(res);
+      const res = await patchApplication(id, token, patch);
 
       if (!res.ok) {
-        if (res.status === 400) {
+        // Try to parse JSON body for details (400 validation, etc.)
+        const body = await parseJson<ApiErrorBody>(res).catch(() => undefined);
+
+        if (res.status === 400 && body) {
           const mapped = applyIssues(body, form.setError, [...FIELD_WHITELIST]);
-          if (!mapped) toast.error(messageFromApiError(body, "Update failed (validation)"));
+          if (!mapped) toast.error(messageFromApiError(body, "Validation failed"));
           return;
         }
         if (res.status === 401) {
@@ -78,22 +136,32 @@ export function useEditApplicationForm(
           router.push("/login");
           return;
         }
-        if (res.status === 404) {
-          toast.error("Application not found");
-          return;
-        }
-        toast.error(messageFromApiError(body, "Update failed"));
+
+        toast.error(messageFromApiError(body, "Updating application failed"));
         return;
       }
 
       toast.success("Application updated");
+      await reload?.(); // fetch fresh entity; effect above will reset() to it
       window.dispatchEvent(new Event("applications:changed"));
-      router.replace("/applications");
-    } catch (e) {
-      console.error(e);
-      toast.error("Network error while updating");
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error. Please try again.");
     }
-  }
+  }, [form, id, reload, router]);
+
+  // Reset: revert to last synced baseline (server entity) + optional refetch
+  const [isResetting, setIsResetting] = useState(false);
+  const handleReset = useCallback(async () => {
+    setIsResetting(true);
+    try {
+      form.reset(lastSyncedRef.current); // local undo
+      await reload?.(); // optional: refetch from server
+      toast.message("Changes discarded.");
+    } finally {
+      setIsResetting(false);
+    }
+  }, [form, reload]);
 
   return { form, onSubmit, handleReset, isResetting };
 }

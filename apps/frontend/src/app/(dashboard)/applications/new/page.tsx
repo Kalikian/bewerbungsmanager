@@ -1,13 +1,13 @@
-// frontend/src/app/applications/new/page.tsx
 "use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getToken } from "@/lib/http";
 import PageHeader from "@/components/layout/page-header";
-import ApplicationForm from "@/components/applications/application-form";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+
+import ApplicationCreateForm from "@/components/applications/application-create-form";
 
 export default function NewApplicationPage() {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function NewApplicationPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ApplicationForm />
+          <ApplicationCreateForm />
         </CardContent>
       </Card>
     </main>

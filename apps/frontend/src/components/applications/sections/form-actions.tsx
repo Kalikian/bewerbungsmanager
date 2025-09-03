@@ -9,7 +9,6 @@ type Props = {
 export default function FormActions({ onResetAction, isResetting }: Props) {
   const {
     formState: { isSubmitting },
-    handleSubmit,
   } = useFormContext();
   return (
     <div className="flex justify-end gap-3">
