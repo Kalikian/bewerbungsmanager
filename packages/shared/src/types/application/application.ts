@@ -41,11 +41,11 @@ export interface Application {
   job_source?: string;
   job_url?: string;
   salary?: number;
-  work_model?: string;
-  start_date?: string;
-  application_deadline?: string;
-  status?: ApplicationStatus;
-  created_at: Date;
+  work_model?: string | null;
+  start_date?: string | null;
+  application_deadline?: string | null;
+  status: ApplicationStatus;
+  created_at: string;
 }
 
 // prettier-ignore
@@ -54,15 +54,15 @@ export interface UpdateApplication {
   id: number;
   job_title?: string;
   company?: string;
-  contact_name?: string | null;         
-  contact_email?: string | null;        
-  contact_phone?: string | null;        
-  address?: string | null;              
-  job_source?: string | null;           
-  job_url?: string | null;              
-  salary?: number | null;               
-  work_model?: string | null;           
-  start_date?: string | null;
+  contact_name?: string | null;        
+  contact_email?: string | null;       
+  contact_phone?: string | null;       
+  address?: string | null;             
+  job_source?: string | null;          
+  job_url?: string | null;             
+  salary?: number | null;              
+  work_model?: string | null;          
+  start_date?: string | null;          
   application_deadline?: string | null; 
   status?: ApplicationStatus;
 }

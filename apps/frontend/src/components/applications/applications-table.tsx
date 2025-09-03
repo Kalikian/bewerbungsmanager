@@ -1,316 +1,29 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { API_BASE, getToken, parseJson } from "@/lib/http";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableRow,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
-import { STATUSES } from "@shared";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { Application } from "@shared";
+
+import { fmtDate } from "@/lib/applications/types";
+import { useApplicationsList } from "@hooks/useApplicationsList";
+
+import StatusCell from "./status-cell";
+import AddNoteDialog from "./dialogs/add-note-dialog";
+import AddAttachmentDialog from "./dialogs/add-attachment-dialog";
 import ApplicationRowActions from "./application-row-actions";
 
-// Backend shape (snake_case)
-type Application = {
-  id: number;
-  job_title: string;
-  company: string;
-  status: (typeof STATUSES)[number];
-  job_source?: string | null;
-  job_url?: string | null;
-  contact_name?: string | null;
-  contact_email?: string | null;
-  application_deadline?: string | null;
-  created_at?: string | null;
-};
-
-function toTs(d?: string | null) {
-  if (!d) return 0;
-  const t = Date.parse(d);
-  return Number.isFinite(t) ? t : 0;
-}
-function fmtDate(d?: string | null) {
-  return d ? d.slice(0, 10) : "—";
-}
-function sortApplications(list: Application[]): Application[] {
-  const archived = new Set(["rejected", "withdrawn"]);
-  const head = list
-    .filter((a) => !archived.has(a.status))
-    .sort((a, b) => toTs(b.created_at) - toTs(a.created_at));
-  const tail = list
-    .filter((a) => archived.has(a.status))
-    .sort((a, b) => toTs(b.created_at) - toTs(a.created_at));
-  return [...head, ...tail];
-}
-
-/** Inline status changer with optimistic PATCH */
-function StatusCell({
-  id,
-  value,
-  onChanged,
-}: {
-  id: number;
-  value: Application["status"];
-  onChanged: (next: Application["status"]) => void;
-}) {
-  const [current, setCurrent] = useState(value);
-  useEffect(() => setCurrent(value), [value]);
-
-  async function update(next: Application["status"]) {
-    const prev = current;
-    setCurrent(next); // optimistic
-    const token = getToken();
-    try {
-      const res = await fetch(`${API_BASE}/applications/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({ status: next }),
-      });
-      if (!res.ok) {
-        setCurrent(prev);
-        const body = await parseJson<any>(res);
-        toast.error(body?.message ?? "Failed to update status");
-        return;
-      }
-      toast.success("Status updated");
-      onChanged(next);
-      // optional: window.dispatchEvent(new Event("applications:changed"));
-    } catch (e) {
-      setCurrent(prev);
-      toast.error("Network error");
-    }
-  }
-
-  return (
-    <Select value={current} onValueChange={(v) => update(v as any)}>
-      <SelectTrigger className="h-7 w-[110px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {STATUSES.map((s) => (
-          <SelectItem key={s} value={s}>
-            {s}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-/** Simple dialog to add a note to an application */
-function AddNoteDialog({ app, onAdded }: { app: Application; onAdded: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [text, setText] = useState("");
-  const disabled = !text.trim();
-
-  async function submit() {
-    const token = getToken();
-    try {
-      const res = await fetch(`${API_BASE}/applications/${app.id}/notes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({ text }),
-      });
-      const body = await parseJson<any>(res);
-      if (!res.ok) {
-        toast.error(body?.message ?? "Failed to add note");
-        return;
-      }
-      toast.success("Note added");
-      setOpen(false);
-      setText("");
-      onAdded();
-      // optional: window.dispatchEvent(new Event("applications:changed"));
-    } catch (e) {
-      toast.error("Network error");
-    }
-  }
-
-  return (
-    <>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        Add note
-      </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add note · {app.job_title}</DialogTitle>
-          </DialogHeader>
-          <Textarea
-            rows={6}
-            placeholder="Write your note…"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={submit} disabled={disabled}>
-              Save note
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
-
-/**  dialog to add an attachment (multipart/form-data) */
-function AddAttachmentDialog({ app, onAdded }: { app: Application; onAdded: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [desc, setDesc] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function submit() {
-    if (!file) return;
-    const token = getToken();
-    const fd = new FormData();
-    fd.append("file", file);
-    if (desc.trim()) fd.append("description", desc.trim());
-
-    try {
-      setBusy(true);
-      const res = await fetch(`${API_BASE}/applications/${app.id}/attachments`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`, // don't set Content-Type for FormData
-        },
-        credentials: "include",
-        body: fd,
-      });
-      const body = await parseJson<any>(res);
-      if (!res.ok) {
-        toast.error(body?.message ?? "Failed to upload attachment");
-        return;
-      }
-      toast.success("Attachment uploaded");
-      setOpen(false);
-      setFile(null);
-      setDesc("");
-      onAdded();
-      // optional: window.dispatchEvent(new Event("applications:changed"));
-    } catch (e) {
-      toast.error("Network error");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        Add attachment
-      </Button>
-      <Dialog
-        open={open}
-        onOpenChange={(o) => {
-          if (!busy) setOpen(o);
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add attachment · {app.job_title}</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-3">
-            <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-            <Textarea
-              rows={4}
-              placeholder="Optional description…"
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-            />
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
-              Cancel
-            </Button>
-            <Button onClick={submit} disabled={!file || busy}>
-              {busy ? "Uploading…" : "Upload"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
-
 export default function ApplicationsTable() {
-  const [items, setItems] = useState<Application[] | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    const token = getToken();
-    if (!token) {
-      setItems([]);
-      setLoading(false);
-      return;
-    }
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE}/applications`, {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      });
-      const body = await parseJson<Application[] | { data?: Application[] }>(res);
-      const raw = Array.isArray(body)
-        ? body
-        : Array.isArray((body as any)?.data)
-          ? (body as any).data
-          : [];
-      setItems(sortApplications(raw));
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to load applications");
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  useEffect(() => {
-    const handler = () => load();
-    window.addEventListener("applications:changed", handler);
-    return () => window.removeEventListener("applications:changed", handler);
-  }, [load]);
-
+  const { items, loading, reload, setItems } = useApplicationsList();
   const hasData = !!items && items.length > 0;
 
   const table = useMemo(() => {
@@ -330,7 +43,7 @@ export default function ApplicationsTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((a, idx) => (
+          {items.map((a) => (
             <TableRow key={a.id}>
               <TableCell className="font-medium">{a.job_title}</TableCell>
               <TableCell>{a.company}</TableCell>
@@ -338,7 +51,7 @@ export default function ApplicationsTable() {
                 <StatusCell
                   id={a.id}
                   value={a.status}
-                  onChanged={(next) => {
+                  onChangedAction={(next) => {
                     setItems((prev) =>
                       prev ? prev.map((x) => (x.id === a.id ? { ...x, status: next } : x)) : prev,
                     );
@@ -365,9 +78,10 @@ export default function ApplicationsTable() {
                   <Button size="sm" asChild>
                     <a href={`/applications/${a.id}`}>Edit</a>
                   </Button>
-                  <AddNoteDialog app={a} onAdded={load} />
-                  <AddAttachmentDialog app={a} onAdded={load} />
-                  <ApplicationRowActions id={a.id} title={a.job_title} onDeletedAction={load} />
+                  <AddNoteDialog app={a as Application} onAddedAction={reload} />
+                  <AddAttachmentDialog app={a as Application} onAddedAction={reload} />
+                  {/* IMPORTANT: prop name is onDeleted */}
+                  <ApplicationRowActions id={a.id} title={a.job_title} onDeletedAction={reload} />
                 </div>
               </TableCell>
             </TableRow>
@@ -375,7 +89,7 @@ export default function ApplicationsTable() {
         </TableBody>
       </Table>
     );
-  }, [items, load]);
+  }, [items, reload, setItems]);
 
   if (loading) {
     return (
@@ -395,7 +109,7 @@ export default function ApplicationsTable() {
         <CardContent className="p-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">No applications yet.</p>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={load}>
+            <Button variant="outline" size="sm" onClick={reload}>
               Refresh
             </Button>
             <Button size="sm" asChild>
@@ -411,7 +125,7 @@ export default function ApplicationsTable() {
     <Card className="shadow-sm">
       <CardContent className="p-0 overflow-x-auto">{table}</CardContent>
       <CardContent className="p-4 border-t flex items-center justify-end">
-        <Button variant="outline" size="sm" onClick={load}>
+        <Button variant="outline" size="sm" onClick={reload}>
           Refresh
         </Button>
       </CardContent>
