@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { STATUSES } from "@shared";
+import ApplicationRowActions from "./application-row-actions";
 
 // Backend shape (snake_case)
 type Application = {
@@ -366,6 +367,7 @@ export default function ApplicationsTable() {
                   </Button>
                   <AddNoteDialog app={a} onAdded={load} />
                   <AddAttachmentDialog app={a} onAdded={load} />
+                  <ApplicationRowActions id={a.id} title={a.job_title} onDeletedAction={load} />
                 </div>
               </TableCell>
             </TableRow>
