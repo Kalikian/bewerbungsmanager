@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 import { createUserSchema, type CreateUserInput } from "@validation/user/userSchema";
-import { applyIssuesToFields, type ApiErrorBody } from "@/lib/api-errors";
-import { parseJson } from "@/lib/http";
+import { applyIssues, type ApiErrorBody } from "@/lib/api-errors";
+import { parseJson, API_BASE } from "@/lib/http";
 
 import {
   Card,
@@ -24,12 +24,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000/api";
-
 export default function RegisterPage() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
-  const [serverMessage, setServerMessage] = useState<string | null>(null);
+  // We don't read the current value anywhere; only need the setter to clear it.
+  const [, setServerMessage] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const {
@@ -66,16 +65,16 @@ export default function RegisterPage() {
         // 409 - email already exists
         if (res.status === 409) {
           const msg = body?.message ?? "User with this email is already registered";
-          setServerError(null); // ensure no global duplicate
+          // Put the error onto the email field for inline feedback
+          setServerError(null);
           setError("email", { type: "server", message: msg });
-          // optional: set focus to email for accessibility
           setFocus("email");
           return;
         }
 
-        // 400 - backend Zod validation issues
+        // 400 - backend validation issues (expects `details`, handled by applyIssues)
         if (res.status === 400) {
-          const mapped = applyIssuesToFields(body?.issues, setError, [
+          const mapped = applyIssues(body, setError, [
             "firstName",
             "lastName",
             "email",
@@ -90,15 +89,15 @@ export default function RegisterPage() {
         return;
       }
 
-      // Use a global toast for success and navigate immediately.
-      // This keeps the UI snappy and the toast persists across navigation.
+      // Success toast persists across navigation if <Toaster/> is mounted high enough
       toast.success("Account created", {
         description: "You can now sign in.",
         duration: 2000,
       });
 
-      // reset the form and go straight to /login.
+      // Reset the form and go to /login
       reset({ firstName: "", lastName: "", email: "", password: "" });
+      setSuccess(true);
       router.push("/login");
     } catch {
       setServerError("Network error. Please try again.");
@@ -188,7 +187,7 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="******"
+                placeholder="********"
                 aria-invalid={!!errors.password}
                 aria-describedby="password-error"
                 className={cn(!!errors.password && "border-red-500 focus-visible:ring-red-500")}

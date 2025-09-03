@@ -1,21 +1,20 @@
 // apps/frontend/components/applications/application.edit.form.tsx
 "use client";
 
-import { useCallback, useEffect, useMemo, useState /* removed: useRef */ } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { useForm, Controller, type Resolver, type FieldErrors } from "react-hook-form"; // NOTE: FieldErrors for onInvalid
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
-import { STATUSES, updateApplicationSchema } from "@shared";
+import { STATUSES, createApplicationSchema, updateApplicationSchema } from "@shared";
 
 import { API_BASE, getToken, parseJson } from "@/lib/http";
 import { applyIssues, messageFromApiError, type ApiErrorBody } from "@/lib/api-errors";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,8 +47,7 @@ type Application = {
   updated_at?: string | null;
 };
 
-// Zod INPUT type for the update schema (RHF works with input type)
-type ZIn = z.input<typeof updateApplicationSchema>;
+type ZIn = z.input<typeof createApplicationSchema>;
 
 /**
  * RHF form values override:
@@ -61,10 +59,9 @@ type FormValues = Omit<ZIn, "status" | "salary"> & {
   salary?: string | number | undefined;
 };
 
-// Zod OUTPUT type (after preprocess/transform) – payload for PATCH
 type Payload = z.output<typeof updateApplicationSchema>;
 
-/* All editable fields (for field error mapping) */
+/* Whitelist for mapping backend issues → field errors */
 const FIELD_WHITELIST = [
   "job_title",
   "company",
@@ -117,35 +114,14 @@ function toFormDefaults(a: Application | null): FormValues {
   };
 }
 
-/* NOTE: Local edit schema — enforce required fields for this form (toast-only UX) */
-const editSchema = updateApplicationSchema.superRefine((val, ctx) => {
-  const jt = (val as any).job_title;
-  const co = (val as any).company;
-  if (typeof jt !== "string" || jt.trim() === "") {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["job_title"],
-      message: "Job title is required.",
-    });
-  }
-  if (typeof co !== "string" || co.trim() === "") {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["company"],
-      message: "Company is required.",
-    });
-  }
-});
-
 export default function ApplicationEditForm({ id }: { id: number }) {
   const [entity, setEntity] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isResetting, setIsResetting] = useState(false); // UI state for the Reset button
+  const [isResetting, setIsResetting] = useState(false);
   const router = useRouter();
 
-  // Use local edit schema so title & company are required on client
   const form = useForm<FormValues>({
-    resolver: zodResolver(editSchema) as unknown as Resolver<FormValues>,
+    resolver: zodResolver(createApplicationSchema) as unknown as Resolver<FormValues>,
     mode: "onSubmit",
     defaultValues: toFormDefaults(null),
   });
@@ -155,7 +131,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
     register,
     control,
     reset,
-    formState: { errors, isSubmitting }, // NOTE: keep errors for aria-invalid but don't render inline messages
+    formState: { errors, isSubmitting },
     setError,
   } = form;
 
@@ -195,7 +171,6 @@ export default function ApplicationEditForm({ id }: { id: number }) {
     load();
   }, [load]);
 
-  // Reset handler: re-fetch from the server and reset the form (like a lightweight page refresh)
   async function handleReset() {
     try {
       setIsResetting(true);
@@ -206,30 +181,30 @@ export default function ApplicationEditForm({ id }: { id: number }) {
     }
   }
 
-  /* RHF invalid handler — show only a toast (no inline field messages) */
-  function onInvalid(errs: FieldErrors<FormValues>) {
-    const messages = Object.values(errs)
-      .map((e) => e?.message)
-      .filter(Boolean) as string[];
-    toast.error("Please check your inputs.", {
-      description: messages.slice(0, 3).join(" • "),
-    });
-  }
-
-  // Submit: parse to payload and PATCH
+  // Submit: validate like CREATE; then convert to UPDATE payload for PATCH
   async function onSubmit(values: FormValues) {
     const token = getToken();
     if (!token) {
       toast("Please log in to edit an application.");
+      router.push("/login");
       return;
     }
 
-    // Values validated by resolver; parse again for transforms
+    // 1) Client-validate & transform with CREATE schema (same UX as new-form)
+    let validatedByCreate: z.output<typeof createApplicationSchema>;
+    try {
+      validatedByCreate = createApplicationSchema.parse(values);
+    } catch {
+      // Inline field errors already shown by resolver
+      return;
+    }
+
+    // 2) Convert to UPDATE payload (drops empties to undefined, enforces update rules)
     let payload: Payload;
     try {
-      payload = editSchema.parse(values) as Payload;
+      payload = updateApplicationSchema.parse(validatedByCreate) as Payload;
     } catch {
-      toast.error("Validation failed. Please check your inputs.");
+      // Should rarely happen, but keep safe-guard
       return;
     }
 
@@ -248,12 +223,16 @@ export default function ApplicationEditForm({ id }: { id: number }) {
 
       if (!res.ok) {
         if (res.status === 400) {
-          // Map server issues into RHF (kept for aria-invalid), but don't render inline
-          applyIssues(body, setError, [...FIELD_WHITELIST]);
-          const details = body?.details?.map((d) => d.message).filter(Boolean) ?? [];
-          toast.error(messageFromApiError(body, "Update failed (validation)"), {
-            description: details.slice(0, 3).join(" • "),
-          });
+          // Map server issues → RHF field errors (inline); toast only if nothing mapped
+          const mapped = applyIssues(body, setError, [...FIELD_WHITELIST]);
+          if (!mapped) {
+            toast.error(messageFromApiError(body, "Update failed (validation)"));
+          }
+          return;
+        }
+        if (res.status === 401) {
+          toast("Session expired. Please log in again.");
+          router.push("/login");
           return;
         }
         if (res.status === 404) {
@@ -291,21 +270,24 @@ export default function ApplicationEditForm({ id }: { id: number }) {
         ) : !entity ? (
           <p className="text-sm text-muted-foreground">No data.</p>
         ) : (
-          // Pass onInvalid to show toast on client-side validation errors
-          <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+          <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="job_title">Job title *</Label>
                 <Input
                   id="job_title"
                   {...register("job_title")}
-                  aria-invalid={!!errors.job_title} // NOTE: keep for a11y; no inline text below
+                  aria-invalid={!!errors.job_title}
                 />
+                {errors.job_title && (
+                  <p className="text-sm text-red-600">{errors.job_title.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="company">Company *</Label>
                 <Input id="company" {...register("company")} aria-invalid={!!errors.company} />
+                {errors.company && <p className="text-sm text-red-600">{errors.company.message}</p>}
               </div>
 
               <div className="grid gap-2">
@@ -328,6 +310,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                     </Select>
                   )}
                 />
+                {errors.status && <p className="text-sm text-red-600">{errors.status.message}</p>}
               </div>
 
               <div className="grid gap-2">
@@ -337,6 +320,9 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("job_source")}
                   aria-invalid={!!errors.job_source}
                 />
+                {errors.job_source && (
+                  <p className="text-sm text-red-600">{errors.job_source.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -348,6 +334,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("job_url")}
                   aria-invalid={!!errors.job_url}
                 />
+                {errors.job_url && <p className="text-sm text-red-600">{errors.job_url.message}</p>}
               </div>
 
               <div className="grid gap-2">
@@ -361,6 +348,9 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("salary")}
                   aria-invalid={!!errors.salary}
                 />
+                {errors.salary && (
+                  <p className="text-sm text-red-600">{errors.salary.message as any}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -371,11 +361,15 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("work_model")}
                   aria-invalid={!!errors.work_model}
                 />
+                {errors.work_model && (
+                  <p className="text-sm text-red-600">{errors.work_model.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="address">Address</Label>
                 <Input id="address" {...register("address")} aria-invalid={!!errors.address} />
+                {errors.address && <p className="text-sm text-red-600">{errors.address.message}</p>}
               </div>
             </div>
 
@@ -390,6 +384,9 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("contact_name")}
                   aria-invalid={!!errors.contact_name}
                 />
+                {errors.contact_name && (
+                  <p className="text-sm text-red-600">{errors.contact_name.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2 sm:col-span-1">
@@ -400,6 +397,9 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("contact_email")}
                   aria-invalid={!!errors.contact_email}
                 />
+                {errors.contact_email && (
+                  <p className="text-sm text-red-600">{errors.contact_email.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2 sm:col-span-1">
@@ -409,6 +409,9 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("contact_phone")}
                   aria-invalid={!!errors.contact_phone}
                 />
+                {errors.contact_phone && (
+                  <p className="text-sm text-red-600">{errors.contact_phone.message}</p>
+                )}
               </div>
             </fieldset>
 
@@ -422,6 +425,9 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("start_date")}
                   aria-invalid={!!errors.start_date}
                 />
+                {errors.start_date && (
+                  <p className="text-sm text-red-600">{errors.start_date.message as any}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
@@ -432,12 +438,16 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                   {...register("application_deadline")}
                   aria-invalid={!!errors.application_deadline}
                 />
+                {errors.application_deadline && (
+                  <p className="text-sm text-red-600">
+                    {errors.application_deadline.message as any}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Actions */}
             <div className="flex justify-end gap-3">
-              {/* Reset button: refetch & reset the form to the server state */}
               <Button
                 type="button"
                 variant="outline"
