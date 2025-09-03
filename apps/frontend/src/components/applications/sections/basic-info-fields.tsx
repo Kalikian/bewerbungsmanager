@@ -3,12 +3,20 @@ import { useFormContext, Controller } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
-  Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
 } from "@/components/ui/select";
 import { STATUSES, type FormValues } from "@/lib/applications/types";
 
 export default function BasicInfoFields() {
-  const { register, control, formState: { errors } } = useFormContext<FormValues>();
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = useFormContext<FormValues>();
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
@@ -36,7 +44,9 @@ export default function BasicInfoFields() {
               </SelectTrigger>
               <SelectContent>
                 {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -53,19 +63,38 @@ export default function BasicInfoFields() {
 
       <div className="grid gap-2">
         <Label htmlFor="job_url">Job URL</Label>
-        <Input id="job_url" type="url" placeholder="https://…" {...register("job_url")} aria-invalid={!!errors.job_url} />
+        <Input
+          id="job_url"
+          type="url"
+          placeholder="https://…"
+          {...register("job_url")}
+          aria-invalid={!!errors.job_url}
+        />
         {errors.job_url && <p className="text-sm text-red-600">{errors.job_url.message}</p>}
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="salary">Salary</Label>
-        <Input id="salary" type="number" step="1" min="0" placeholder="e.g. 55000" {...register("salary")} aria-invalid={!!errors.salary} />
+        <Input
+          id="salary"
+          type="number"
+          step="1"
+          min="0"
+          placeholder="e.g. 55000"
+          {...register("salary")}
+          aria-invalid={!!errors.salary}
+        />
         {errors.salary && <p className="text-sm text-red-600">{errors.salary.message as any}</p>}
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="work_model">Work model</Label>
-        <Input id="work_model" placeholder="onsite / hybrid / remote" {...register("work_model")} aria-invalid={!!errors.work_model} />
+        <Input
+          id="work_model"
+          placeholder="onsite / hybrid / remote"
+          {...register("work_model")}
+          aria-invalid={!!errors.work_model}
+        />
         {errors.work_model && <p className="text-sm text-red-600">{errors.work_model.message}</p>}
       </div>
 

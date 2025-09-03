@@ -16,7 +16,11 @@ import { patchApplication } from "@/lib/applications/api";
 import { toFormDefaults } from "@/lib/applications/transform";
 import { FIELD_WHITELIST, type FormValues } from "@/lib/applications/types";
 
-export function useEditApplicationForm(id: number, entity: AppEntity | null, reload: () => Promise<void>) {
+export function useEditApplicationForm(
+  id: number,
+  entity: AppEntity | null,
+  reload: () => Promise<void>,
+) {
   const router = useRouter();
   const [isResetting, setIsResetting] = useState(false);
 
