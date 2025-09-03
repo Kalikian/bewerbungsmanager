@@ -89,7 +89,7 @@ export async function updateApplication(
   // build SET clause safely; placeholders start at $3 because $1=id, $2=userId
   const setClause = entries.map(([key], idx) => `"${key}" = $${idx + 3}`).join(', ');
 
-  const values = entries.map(([, v]) => v ?? null) as Array<string | number | Date | null>;
+  const values = entries.map(([, v]) => v ?? null) as Array<string | number | null>;
 
   // First two placeholders are reserved for id and userId
   values.unshift(userId);

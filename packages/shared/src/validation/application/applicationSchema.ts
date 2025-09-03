@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { emptyToUndef,emptyToNull, toYYYYMMDD } from '../helpers/zodHelpers.js';
+import { emptyToUndef, emptyToNull, toYYYYMMDD } from '../helpers/zodHelpers.js';
 
 /* ------------------------- Constants / Enums ------------------------- */
 export const STATUSES = [
@@ -12,14 +12,9 @@ export const STATUSES = [
   'withdrawn',
 ] as const;
 
-/* ------------------------- Optional base (for PATCH) ------------------------- */
-/**
- * All fields optional; empty strings/null become undefined.
- * Email/URL use Zod v4 style (pipe to z.email/z.url).
- */
-const baseApplicationShapeOptional = {
-  job_title: z.preprocess(emptyToNull, z.string().min(1).max(200).optional()),
-  company: z.preprocess(emptyToNull, z.string().min(1).max(200).optional()),
+/* ------------------------- CREATE base (no nulls) ------------------------- */
+/** CHANGE: Base für CREATE – optionale Felder: '' -> undefined (keine nulls) */
+const baseCreateShape = {
   contact_name: z.preprocess(emptyToUndef, z.string().min(1).max(200).optional()),
   contact_email: z.preprocess(
     emptyToUndef,
@@ -50,17 +45,66 @@ const baseApplicationShapeOptional = {
   status: z.preprocess(emptyToUndef, z.enum(STATUSES).optional()),
 } as const;
 
+/* ------------------------- UPDATE base (clearable) ------------------------- */
+/** CHANGE: Base für UPDATE – optionale Felder: '' -> null (löschen erlaubt) */
+const baseUpdateShape = {
+  // Hinweis: job_title & company beim Update nicht nullbar (UI erzwingt Pflicht),
+  // leer lassen bedeutet: kein Update. Wenn du sie auch löschbar willst, analog unten auf nullbar stellen.
+  job_title: z.preprocess(emptyToUndef, z.string().min(1).max(200).optional()),
+  company: z.preprocess(emptyToUndef, z.string().min(1).max(200).optional()),
+
+  contact_name: z.preprocess(
+    emptyToNull,
+    z.union([z.string().min(1).max(200), z.null()]).optional(),
+  ),
+  contact_email: z.preprocess(
+    emptyToNull,
+    z
+      .union([
+        z
+          .string()
+          .trim()
+          .max(320, { message: 'Email too long' })
+          .transform((s) => s.toLowerCase())
+          .pipe(z.email({ message: 'Invalid email address' })),
+        z.null(),
+      ])
+      .optional(),
+  ),
+  contact_phone: z.preprocess(emptyToNull, z.union([z.string().max(50), z.null()]).optional()),
+  address: z.preprocess(emptyToNull, z.union([z.string().max(300), z.null()]).optional()),
+  job_source: z.preprocess(emptyToNull, z.union([z.string().max(200), z.null()]).optional()),
+  job_url: z.preprocess(
+    emptyToNull,
+    z
+      .union([
+        z.string().trim().max(1000, { message: 'URL too long' }).pipe(z.url({ message: 'Invalid URL' })),
+        z.null(),
+      ])
+      .optional(),
+  ),
+  salary: z.preprocess(
+    emptyToNull,
+    z.union([z.coerce.number().nonnegative(), z.null()]).optional(),
+  ),
+  work_model: z.preprocess(emptyToNull, z.union([z.string().max(50), z.null()]).optional()),
+  start_date: z.preprocess(emptyToNull, z.union([toYYYYMMDD, z.null()]).optional()),
+  application_deadline: z.preprocess(emptyToNull, z.union([toYYYYMMDD, z.null()]).optional()),
+  status: z.preprocess(emptyToUndef, z.enum(STATUSES).optional()),
+} as const;
+
 /* ------------------------- CREATE (POST /applications) ------------------------- */
 /**
  * For create: job_title and company are REQUIRED.
  * status defaults to 'open' if omitted/empty.
+ * CHANGE: nutzt baseCreateShape (keine nulls) -> crasht das Backend nicht.
  */
 export const createApplicationSchema = z
   .object({
-    ...baseApplicationShapeOptional, // spread first …
-    job_title: z.preprocess(emptyToUndef, z.string().min(1).max(200)), // … then override as required
+    ...baseCreateShape,
+    job_title: z.preprocess(emptyToUndef, z.string().min(1).max(200)),
     company: z.preprocess(emptyToUndef, z.string().min(1).max(200)),
-    status: z.preprocess(emptyToUndef, z.enum(STATUSES).optional()).transform((v) => v ?? 'open'), // default only for create
+    status: z.preprocess(emptyToUndef, z.enum(STATUSES).optional()).transform((v) => v ?? 'open'),
   })
   .strict();
 
@@ -69,10 +113,10 @@ export type CreateApplicationInput = z.infer<typeof createApplicationSchema>;
 /* ------------------------- UPDATE (PATCH /applications/:id) ------------------------- */
 /**
  * For update: all fields optional, BUT at least one must be provided (with a defined value).
- * Using values-scan ensures that `{ job_title: "" }` (→ undefined) does NOT pass.
+ * CHANGE: nutzt baseUpdateShape -> optionale Felder sind clearbar ('' -> null).
  */
 export const updateApplicationSchema = z
-  .object(baseApplicationShapeOptional )
+  .object(baseUpdateShape)
   .strict()
   .refine((obj) => Object.values(obj).some((v) => v !== undefined), {
     message: 'At least one field must be provided',
@@ -86,3 +130,4 @@ export const applicationIdParamSchema = z
     id: z.coerce.number().int().positive(),
   })
   .strict();
+

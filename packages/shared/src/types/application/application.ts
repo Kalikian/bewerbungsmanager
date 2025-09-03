@@ -51,18 +51,18 @@ export interface Application {
 // prettier-ignore
 // Type definition for updating an application (partial update)
 export interface UpdateApplication {
-  id: number;                        // Required: ID of the application to update
+  id: number;
   job_title?: string;
   company?: string;
-  contact_name?: string;
-  contact_email?: string;
-  contact_phone?: string;
-  address?: string;
-  job_source?: string;
-  job_url?: string;
-  salary?: number;
-  work_model?: string;
-  start_date?: string;
-  application_deadline?: string;
+  contact_name?: string | null;         
+  contact_email?: string | null;        
+  contact_phone?: string | null;        
+  address?: string | null;              
+  job_source?: string | null;           
+  job_url?: string | null;              
+  salary?: number | null;               
+  work_model?: string | null;           
+  start_date?: string | null;
+  application_deadline?: string | null; 
   status?: ApplicationStatus;
 }
