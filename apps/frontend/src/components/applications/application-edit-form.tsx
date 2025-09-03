@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 import { STATUSES, createApplicationSchema, updateApplicationSchema } from "@shared";
+import type { Application as AppEntity, ApplicationStatus } from "@shared";
 
 import { API_BASE, getToken, parseJson } from "@/lib/http";
 import { applyIssues, messageFromApiError, type ApiErrorBody } from "@/lib/api-errors";
@@ -27,26 +28,6 @@ import {
 
 /* ───────────────────── Types ───────────────────── */
 
-// Backend entity shape (snake_case)
-type Application = {
-  id: number;
-  job_title: string;
-  company: string;
-  status: (typeof STATUSES)[number];
-  contact_name?: string | null;
-  contact_email?: string | null;
-  contact_phone?: string | null;
-  address?: string | null;
-  job_source?: string | null;
-  job_url?: string | null;
-  salary?: number | null;
-  work_model?: string | null;
-  start_date?: string | null; // "YYYY-MM-DD" or null
-  application_deadline?: string | null; // "YYYY-MM-DD" or null
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
 type ZIn = z.input<typeof createApplicationSchema>;
 
 /**
@@ -55,7 +36,7 @@ type ZIn = z.input<typeof createApplicationSchema>;
  * - salary: number input may deliver string; backend coerces to number on parse
  */
 type FormValues = Omit<ZIn, "status" | "salary"> & {
-  status?: (typeof STATUSES)[number];
+  status?: ApplicationStatus;
   salary?: string | number | undefined;
 };
 
@@ -79,7 +60,7 @@ const FIELD_WHITELIST = [
 ] as const;
 
 /* Map API entity -> form defaults (ensure empty strings for inputs) */
-function toFormDefaults(a: Application | null): FormValues {
+function toFormDefaults(a: AppEntity | null): FormValues {
   if (!a) {
     return {
       job_title: "",
@@ -115,7 +96,7 @@ function toFormDefaults(a: Application | null): FormValues {
 }
 
 export default function ApplicationEditForm({ id }: { id: number }) {
-  const [entity, setEntity] = useState<Application | null>(null);
+  const [entity, setEntity] = useState<AppEntity | null>(null);
   const [loading, setLoading] = useState(true);
   const [isResetting, setIsResetting] = useState(false);
   const router = useRouter();
@@ -149,7 +130,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
-      const body = await parseJson<Application>(res);
+      const body = await parseJson<AppEntity>(res);
       if (!res.ok) {
         toast.error(messageFromApiError(body as any, "Failed to load application"));
         setEntity(null);
@@ -181,76 +162,67 @@ export default function ApplicationEditForm({ id }: { id: number }) {
     }
   }
 
-  // Submit: validate like CREATE; then convert to UPDATE payload for PATCH
-  async function onSubmit(values: FormValues) {
-    const token = getToken();
-    if (!token) {
-      toast("Please log in to edit an application.");
-      router.push("/login");
-      return;
-    }
+// CHANGE: build PATCH payload from RAW form values via UPDATE schema
+async function onSubmit(values: FormValues) {
+  const token = getToken();
+  if (!token) {
+    toast("Please log in to edit an application.");
+    router.push("/login");
+    return;
+  }
 
-    // 1) Client-validate & transform with CREATE schema (same UX as new-form)
-    let validatedByCreate: z.output<typeof createApplicationSchema>;
-    try {
-      validatedByCreate = createApplicationSchema.parse(values);
-    } catch {
-      // Inline field errors already shown by resolver
-      return;
-    }
+  // CHANGE: get the raw UI values (call the function!)
+  const raw = form.getValues(); // <— was: const raw = form.getValues
 
-    // 2) Convert to UPDATE payload (drops empties to undefined, enforces update rules)
-    let payload: Payload;
-    try {
-      payload = updateApplicationSchema.parse(validatedByCreate) as Payload;
-    } catch {
-      // Should rarely happen, but keep safe-guard
-      return;
-    }
+  // CHANGE: parse with UPDATE schema so '' becomes null (clear field)
+  let payload: Payload;
+  try {
+    payload = updateApplicationSchema.parse(raw) as Payload;
+  } catch {
+    // RHF already shows inline errors via resolver; keep this silent
+    return;
+  }
 
-    try {
-      const res = await fetch(`${API_BASE}/applications/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+  try {
+    const res = await fetch(`${API_BASE}/applications/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
 
-      const body = await parseJson<ApiErrorBody>(res);
+    const body = await parseJson<ApiErrorBody>(res);
 
-      if (!res.ok) {
-        if (res.status === 400) {
-          // Map server issues → RHF field errors (inline); toast only if nothing mapped
-          const mapped = applyIssues(body, setError, [...FIELD_WHITELIST]);
-          if (!mapped) {
-            toast.error(messageFromApiError(body, "Update failed (validation)"));
-          }
-          return;
-        }
-        if (res.status === 401) {
-          toast("Session expired. Please log in again.");
-          router.push("/login");
-          return;
-        }
-        if (res.status === 404) {
-          toast.error("Application not found");
-          return;
-        }
-        toast.error(messageFromApiError(body, "Update failed"));
+    if (!res.ok) {
+      if (res.status === 400) {
+        const mapped = applyIssues(body, setError, [...FIELD_WHITELIST]);
+        if (!mapped) toast.error(messageFromApiError(body, "Update failed (validation)"));
         return;
       }
-
-      toast.success("Application updated");
-      window.dispatchEvent(new Event("applications:changed"));
-      router.replace("/applications");
-    } catch (e) {
-      console.error(e);
-      toast.error("Network error while updating");
+      if (res.status === 401) {
+        toast("Session expired. Please log in again.");
+        router.push("/login");
+        return;
+      }
+      if (res.status === 404) {
+        toast.error("Application not found");
+        return;
+      }
+      toast.error(messageFromApiError(body, "Update failed"));
+      return;
     }
+
+    toast.success("Application updated");
+    window.dispatchEvent(new Event("applications:changed"));
+    router.replace("/applications");
+  } catch (e) {
+    console.error(e);
+    toast.error("Network error while updating");
   }
+}
 
   const cardTitle = useMemo(
     () => (entity ? `${entity.job_title} · ${entity.company}` : "Application"),
