@@ -42,6 +42,7 @@ const baseCreateShape = {
   work_model: z.preprocess(emptyToUndef, z.string().max(50).optional()),
   start_date: z.preprocess(emptyToUndef, toYYYYMMDD?.optional()),
   application_deadline: z.preprocess(emptyToUndef, toYYYYMMDD?.optional()),
+  applied_date: z.preprocess(emptyToUndef, toYYYYMMDD?.optional()),
   status: z.preprocess(emptyToUndef, z.enum(STATUSES).optional()),
 } as const;
 
@@ -90,6 +91,7 @@ const baseUpdateShape = {
   work_model: z.preprocess(emptyToNull, z.union([z.string().max(50), z.null()]).optional()),
   start_date: z.preprocess(emptyToNull, z.union([toYYYYMMDD, z.null()]).optional()),
   application_deadline: z.preprocess(emptyToNull, z.union([toYYYYMMDD, z.null()]).optional()),
+  applied_date: z.preprocess(emptyToNull, z.union([toYYYYMMDD, z.null()]).optional()),
   status: z.preprocess(emptyToUndef, z.enum(STATUSES).optional()),
 } as const;
 

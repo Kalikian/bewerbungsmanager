@@ -22,8 +22,9 @@ export interface NewApplication {
   job_url?: string;                    // Optional: Link to the job posting
   salary?: number;                     // Optional: Salary information
   work_model?: string;                 // Optional: Work model (e.g. remote, onsite)
-  start_date?: string;                 // Optional: Start date (can be string or Date)
-  application_deadline?: string;       // Optional: Application deadline (can be string or Date)
+  start_date?: string;                 // Optional: Start date string 
+  applied_date?: string;               // Optional: applied date can be string
+  application_deadline?: string;       // Optional: Application deadline can be string 
   status?: ApplicationStatus;          // Optional: Application status (restricted to allowed values)
   // created_at is set automatically by the database (DEFAULT now())
 }
@@ -44,6 +45,7 @@ export interface Application {
   work_model?: string | null;
   start_date?: string | null;
   application_deadline?: string | null;
+  applied_date?: string | null
   status: ApplicationStatus;
   created_at: string;
 }
@@ -64,5 +66,6 @@ export interface UpdateApplication {
   work_model?: string | null;          
   start_date?: string | null;          
   application_deadline?: string | null; 
+  applied_date?: string | null
   status?: ApplicationStatus;
 }
