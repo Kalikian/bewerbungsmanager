@@ -62,8 +62,8 @@ function buildPatchPayload(
 
   const raw = nextUI;
   if (raw.salary === "" && patch.salary === undefined && base.salary !== null) {
-  patch.salary = null as any;
-}
+    patch.salary = null as any;
+  }
   return patch;
 }
 

@@ -18,6 +18,7 @@ import { fmtDate } from "@/lib/applications/types";
 import { useApplicationsList } from "@hooks/useApplicationsList";
 
 import StatusCell from "./status-cell";
+import RowOverflow from "./application-row-overflow";
 import AddNoteDialog from "./dialogs/add-note-dialog";
 import AddAttachmentDialog from "./dialogs/add-attachment-dialog";
 import ApplicationRowActions from "./application-row-actions";
@@ -33,21 +34,25 @@ export default function ApplicationsTable() {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[1%]">#</TableHead>
             <TableHead>Job title</TableHead>
             <TableHead>Company</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="hidden xl:table-cell">Source</TableHead>
-            <TableHead className="hidden lg:table-cell">Contact</TableHead>
-            <TableHead>Deadline</TableHead>
-            <TableHead>Created</TableHead>
+            <TableHead>Work model</TableHead>
+            <TableHead>Applied</TableHead>
             <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((a) => (
+          {items.map((a, idx) => (
             <TableRow key={a.id}>
-              <TableCell className="font-medium">{a.job_title}</TableCell>
-              <TableCell>{a.company}</TableCell>
+              <TableCell className="text-muted-foreground tabular-nums">{idx + 1}</TableCell>
+              <TableCell className="font-medium">
+                <Link href={`/applications/${a.id}`} className="hover:underline">
+                  {a.job_title ?? "—"}
+                </Link>
+              </TableCell>
+              <TableCell>{a.company ?? "—"}</TableCell>
               <TableCell>
                 <StatusCell
                   id={a.id}
@@ -59,29 +64,12 @@ export default function ApplicationsTable() {
                   }}
                 />
               </TableCell>
-              <TableCell className="hidden xl:table-cell">
-                {a.job_source ? a.job_source : "—"}
-              </TableCell>
-              <TableCell className="hidden lg:table-cell">
-                {a.contact_name || a.contact_email ? (
-                  <span className="text-sm text-muted-foreground">
-                    {a.contact_name ?? "—"}
-                    {a.contact_email ? ` · ${a.contact_email}` : ""}
-                  </span>
-                ) : (
-                  "—"
-                )}
-              </TableCell>
-              <TableCell>{fmtDate(a.application_deadline)}</TableCell>
-              <TableCell>{fmtDate(a.created_at)}</TableCell>
+              <TableCell>{a.work_model ?? "—"}</TableCell>
+              <TableCell>{fmtDate((a as any).applied_date)}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Button size="sm" asChild>
-                    <a href={`/applications/${a.id}`}>Edit</a>
-                  </Button>
                   <AddNoteDialog app={a as Application} onAddedAction={reload} />
                   <AddAttachmentDialog app={a as Application} onAddedAction={reload} />
-                  {/* IMPORTANT: prop name is onDeleted */}
                   <ApplicationRowActions id={a.id} title={a.job_title} onDeletedAction={reload} />
                 </div>
               </TableCell>
