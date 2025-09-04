@@ -2,16 +2,16 @@
 
 import { useMemo } from "react";
 import { FormProvider } from "react-hook-form";
+import { useRouter } from "next/navigation"; 
+import { toast } from "sonner"; 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 import { useApplication } from "@hooks/useApplication";
 import { useEditApplicationForm } from "@hooks/useEditApplicationForm";
-import BasicInfoFields from "./sections/basic-info-fields";
-import ContactFields from "./sections/contact-fields";
-import DateFields from "./sections/date-fields";
-import FormActions from "./sections/form-actions";
+import ApplicationForm from "./application-form";
 
 export default function ApplicationEditForm({ id }: { id: number }) {
+  const router = useRouter(); 
   const { entity, loading, reload } = useApplication(id);
   const { form, onSubmit, handleReset, isResetting } = useEditApplicationForm(id, entity, reload);
 
@@ -34,12 +34,24 @@ export default function ApplicationEditForm({ id }: { id: number }) {
           <p className="text-sm text-muted-foreground">No data.</p>
         ) : (
           <FormProvider {...form}>
-            {/* NOTE: disable native validation, use Zod/RHF only */}
-            <form noValidate onSubmit={form.handleSubmit(() => onSubmit())} className="space-y-6">
-              <BasicInfoFields />
-              <ContactFields />
-              <DateFields />
-              <FormActions onResetAction={handleReset} isResetting={isResetting} />
+            <form
+              noValidate
+              className="space-y-6"
+              onSubmit={form.handleSubmit(async () => {
+                const ok = await onSubmit(); 
+                if (ok) {
+                  toast.success("Changes saved");
+                  window.dispatchEvent(new Event("applications:changed"));
+                  router.replace("/applications"); 
+                  router.refresh();  
+                }
+              })}
+            >
+              <ApplicationForm
+                mode="edit"
+                onResetAction={handleReset}
+                isResetting={isResetting}
+              />
             </form>
           </FormProvider>
         )}

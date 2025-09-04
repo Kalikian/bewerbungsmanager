@@ -46,7 +46,7 @@ export default function ApplicationRowActions({ id, title, onDeletedAction }: Pr
       }
 
       toast.success("Application deleted");
-      onDeletedAction?.(); // Tabelle neu laden
+      onDeletedAction?.(); // Table reload
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Delete failed";
       toast.error(msg);

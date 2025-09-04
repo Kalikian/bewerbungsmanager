@@ -102,7 +102,7 @@ export function useEditApplicationForm(
     if (!token) {
       toast("Please log in to update the application.");
       router.push("/login");
-      return;
+      return false;
     }
 
     // Build a minimal PATCH based on changes vs baseline
@@ -111,12 +111,12 @@ export function useEditApplicationForm(
       patch = buildPatchPayload(lastSyncedRef.current, form.getValues());
     } catch {
       toast.error("Validation failed. Please check your inputs.");
-      return;
+      return false;
     }
 
     if (Object.keys(patch).length === 0) {
       toast.message("No changes to save.");
-      return;
+      return false;
     }
 
     try {
@@ -129,24 +129,24 @@ export function useEditApplicationForm(
         if (res.status === 400 && body) {
           const mapped = applyIssues(body, form.setError, [...FIELD_WHITELIST]);
           if (!mapped) toast.error(messageFromApiError(body, "Validation failed"));
-          return;
+          return false;
         }
         if (res.status === 401) {
           toast("Session expired. Please log in again.");
           router.push("/login");
-          return;
+          return false;
         }
 
         toast.error(messageFromApiError(body, "Updating application failed"));
-        return;
+        return false;
       }
 
-      toast.success("Application updated");
       await reload?.(); // fetch fresh entity; effect above will reset() to it
-      window.dispatchEvent(new Event("applications:changed"));
+      return true;
     } catch (err) {
       console.error(err);
       toast.error("Network error. Please try again.");
+      return false;
     }
   }, [form, id, reload, router]);
 

@@ -78,8 +78,11 @@ export default function ApplicationCreateForm() {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
-        <ApplicationForm onResetAction={async () => methods.reset(APPLICATION_DEFAULTS)} />
+      <form noValidate onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
+        <ApplicationForm
+          mode="create"
+          onResetAction={async () => methods.reset(APPLICATION_DEFAULTS)}
+        />
       </form>
     </FormProvider>
   );

@@ -5,11 +5,17 @@ import { Button } from "@/components/ui/button";
 type Props = {
   onResetAction: () => Promise<void>;
   isResetting: boolean;
+  mode: "create" | "edit";
 };
-export default function FormActions({ onResetAction, isResetting }: Props) {
+export default function FormActions({ onResetAction, isResetting, mode }: Props) {
   const {
     formState: { isSubmitting },
   } = useFormContext();
+
+  // Derive submit button labels from mode
+  const submitIdleLabel = mode === "create" ? "Create application" : "Save changes";
+  const submitBusyLabel = mode === "create" ? "Creating…" : "Saving…";
+
   return (
     <div className="flex justify-end gap-3">
       <Button
@@ -20,8 +26,8 @@ export default function FormActions({ onResetAction, isResetting }: Props) {
       >
         {isResetting ? "Resetting…" : "Reset"}
       </Button>
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Saving…" : "Save changes"}
+      <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
+        {isSubmitting ? submitBusyLabel : submitIdleLabel}
       </Button>
     </div>
   );

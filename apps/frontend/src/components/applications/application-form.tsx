@@ -9,16 +9,18 @@ type Props = {
   /** Called when the user clicks the Reset button */
   onResetAction: () => Promise<void>;
   isResetting?: boolean;
+  /** 'create' on the create page, 'edit' on the edit page */
+  mode: "create" | "edit";
 };
 
-export default function ApplicationForm({ onResetAction, isResetting = false }: Props) {
-  // Purely presentational: only composes sections, no hooks here.
+export default function ApplicationForm({ onResetAction, isResetting = false, mode }: Props) {
+  // purely presentational
   return (
     <>
       <BasicInfoFields />
       <ContactFields />
       <DateFields />
-      <FormActions onResetAction={onResetAction} isResetting={isResetting} />
+      <FormActions mode={mode} onResetAction={onResetAction} isResetting={isResetting} />
     </>
   );
 }
