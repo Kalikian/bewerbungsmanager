@@ -1,6 +1,5 @@
 "use client";
 
-import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getToken } from "@/lib/http";

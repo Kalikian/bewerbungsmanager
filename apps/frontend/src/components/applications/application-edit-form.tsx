@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { FormProvider } from "react-hook-form";
-import { useRouter } from "next/navigation"; 
-import { toast } from "sonner"; 
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 import { useApplication } from "@hooks/useApplication";
@@ -11,7 +11,7 @@ import { useEditApplicationForm } from "@hooks/useEditApplicationForm";
 import ApplicationForm from "./application-form";
 
 export default function ApplicationEditForm({ id }: { id: number }) {
-  const router = useRouter(); 
+  const router = useRouter();
   const { entity, loading, reload } = useApplication(id);
   const { form, onSubmit, handleReset, isResetting } = useEditApplicationForm(id, entity, reload);
 
@@ -38,20 +38,16 @@ export default function ApplicationEditForm({ id }: { id: number }) {
               noValidate
               className="space-y-6"
               onSubmit={form.handleSubmit(async () => {
-                const ok = await onSubmit(); 
+                const ok = await onSubmit();
                 if (ok) {
                   toast.success("Changes saved");
                   window.dispatchEvent(new Event("applications:changed"));
-                  router.replace("/applications"); 
-                  router.refresh();  
+                  router.replace("/applications");
+                  router.refresh();
                 }
               })}
             >
-              <ApplicationForm
-                mode="edit"
-                onResetAction={handleReset}
-                isResetting={isResetting}
-              />
+              <ApplicationForm mode="edit" onResetAction={handleReset} isResetting={isResetting} />
             </form>
           </FormProvider>
         )}

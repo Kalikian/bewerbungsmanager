@@ -21,6 +21,7 @@ import StatusCell from "./status-cell";
 import AddNoteDialog from "./dialogs/add-note-dialog";
 import AddAttachmentDialog from "./dialogs/add-attachment-dialog";
 import ApplicationRowActions from "./application-row-actions";
+import Link from "next/link";
 
 export default function ApplicationsTable() {
   const { items, loading, reload, setItems } = useApplicationsList();
@@ -113,7 +114,7 @@ export default function ApplicationsTable() {
               Refresh
             </Button>
             <Button size="sm" asChild>
-              <a href="/applications/new">New application</a>
+              <Link href="/applications/new/">New application</Link>
             </Button>
           </div>
         </CardContent>

@@ -35,6 +35,7 @@ export const APPLICATION_DEFAULTS: ApplicationFormValues = {
   work_model: "",
   start_date: "",
   application_deadline: "",
+  applied_date: "",
 };
 
 export const FIELD_WHITELIST = [
@@ -51,6 +52,7 @@ export const FIELD_WHITELIST = [
   "work_model",
   "start_date",
   "application_deadline",
+  "applied_date",
 ] as const;
 
 export function toTs(d?: string | null) {

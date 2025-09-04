@@ -6,6 +6,7 @@ import { getToken } from "@/lib/http";
 import PageHeader from "@/components/layout/page-header";
 import ApplicationsTable from "@/components/applications/applications-table";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function ApplicationsPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function ApplicationsPage() {
         <PageHeader title="Applications" description="Create and manage your job applications" />
         <div className="pt-2">
           <Button asChild>
-            <a href="/applications/new">New application</a>
+            <Link href="/applications/new/">New application</Link>
           </Button>
         </div>
       </div>

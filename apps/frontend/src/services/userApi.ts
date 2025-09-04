@@ -1,5 +1,5 @@
 // src/services/userApi.ts
-import { http, parseJson, setToken } from "@lib/http";
+import { http, setToken } from "@lib/http";
 import type { LoginUser, UserPublic } from "@shared";
 
 // POST /api/user/login -> { token }

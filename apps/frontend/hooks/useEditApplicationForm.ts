@@ -37,6 +37,7 @@ function mapEntityToForm(e: Application): ApplicationFormValues {
     work_model: e.work_model ?? "",
     start_date: e.start_date ? e.start_date.slice(0, 10) : "",
     application_deadline: e.application_deadline ? e.application_deadline.slice(0, 10) : "",
+    applied_date: e.applied_date ? e.applied_date.slice(0, 10) : "",
   };
 }
 

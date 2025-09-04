@@ -2,17 +2,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { getToken, clearToken } from "@/lib/http";
+import { getToken } from "@/lib/http";
 import { navStateFor } from "@/lib/routes";
 import { useEffect, useState } from "react";
 import { UserDropdown } from "../ui/user-icon";
 
 export default function Header() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {

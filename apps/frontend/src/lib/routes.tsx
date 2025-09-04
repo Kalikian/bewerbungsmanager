@@ -38,7 +38,6 @@ export function isAppArea(pathname: string | null): boolean {
 export function navStateFor(pathname: string | null, hasToken: boolean) {
   const onAuth = isAuthPage(pathname);
   const inPublic = isPublicArea(pathname);
-  const inApp = isAppArea(pathname);
 
   return {
     // Show Login/Register only if not authed, not on /login or /register
