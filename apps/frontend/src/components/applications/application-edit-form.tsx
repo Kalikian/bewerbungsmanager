@@ -41,7 +41,6 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                 const ok = await onSubmit();
                 if (ok) {
                   toast.success("Changes saved");
-                  window.dispatchEvent(new Event("applications:changed"));
                   router.replace("/applications");
                   router.refresh();
                 }

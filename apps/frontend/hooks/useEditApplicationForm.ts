@@ -8,13 +8,12 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { Application } from "@shared";
-import { createApplicationSchema } from "@shared";
+import { updateApplicationSchema, type UpdateApplicationInput } from "@shared";
 
 import {
   APPLICATION_DEFAULTS,
   FIELD_WHITELIST,
   type ApplicationFormValues,
-  type ApplicationPayload,
 } from "@/lib/applications/types";
 import { patchApplication } from "@/lib/applications/api";
 import { getToken, parseJson } from "@/lib/http";
@@ -33,7 +32,7 @@ function mapEntityToForm(e: Application): ApplicationFormValues {
     address: e.address ?? "",
     job_source: e.job_source ?? "",
     job_url: e.job_url ?? "",
-    salary: e.salary ?? undefined, // UI allows string|number|undefined; Zod will coerce
+    salary: e.salary ?? "",
     work_model: e.work_model ?? "",
     start_date: e.start_date ? e.start_date.slice(0, 10) : "",
     application_deadline: e.application_deadline ? e.application_deadline.slice(0, 10) : "",
@@ -41,33 +40,30 @@ function mapEntityToForm(e: Application): ApplicationFormValues {
   };
 }
 
-/** Normalize UI values to API payload via Zod (coerce strings, trim empties, etc.) */
-function normalize(ui: ApplicationFormValues): ApplicationPayload {
-  return createApplicationSchema.parse(ui);
+function normalize(ui: ApplicationFormValues): UpdateApplicationInput {
+  return updateApplicationSchema.parse(ui);
 }
 
-/** Build a PATCH payload containing only changed fields (vs baseline UI values) */
+// buildPatchPayload: drop only undefined, keep null; compare strict
 function buildPatchPayload(
   baseUI: ApplicationFormValues,
   nextUI: ApplicationFormValues,
-): Partial<ApplicationPayload> {
+): Partial<UpdateApplicationInput> {
   const base = normalize(baseUI);
   const next = normalize(nextUI);
 
-  const patch: Partial<ApplicationPayload> = {};
-  (FIELD_WHITELIST as readonly string[]).forEach((key) => {
-    const k = key as keyof ApplicationPayload;
-    const a = base[k];
-    const b = next[k];
-    // shallow compare is enough here (only primitives)
-    const changed =
-      (a ?? undefined) !== (b ?? undefined) &&
-      // special case: numbers vs numeric strings already normalized by Zod,
-      // so only true changes remain.
-      true;
-    if (changed) patch[k] = b as any;
-  });
+  const keys = FIELD_WHITELIST as readonly (keyof UpdateApplicationInput)[];
+  const patch = Object.fromEntries(
+    keys
+      .filter((k) => next[k] !== undefined)
+      .filter((k) => base[k] !== next[k])
+      .map((k) => [k, next[k] as unknown]),
+  ) as Partial<UpdateApplicationInput>;
 
+  const raw = nextUI;
+  if (raw.salary === "" && patch.salary === undefined && base.salary !== null) {
+  patch.salary = null as any;
+}
   return patch;
 }
 
@@ -78,15 +74,13 @@ export function useEditApplicationForm(
 ) {
   const router = useRouter();
 
-  // RHF instance with your UI types
+  // RHF instance with UI types
   const form = useForm<ApplicationFormValues>({
-    resolver: zodResolver(createApplicationSchema) as unknown as Resolver<ApplicationFormValues>,
-    // ^ if you have an update schema, you can swap it in; not required.
+    resolver: zodResolver(updateApplicationSchema) as unknown as Resolver<ApplicationFormValues>,
     defaultValues: APPLICATION_DEFAULTS,
     mode: "onSubmit",
   });
 
-  // Keep the last "pristine" UI snapshot for Reset & diff
   const lastSyncedRef = useRef<ApplicationFormValues>(APPLICATION_DEFAULTS);
 
   // Sync RHF whenever the server entity arrives/changes
@@ -107,7 +101,7 @@ export function useEditApplicationForm(
     }
 
     // Build a minimal PATCH based on changes vs baseline
-    let patch: Partial<ApplicationPayload>;
+    let patch: Partial<UpdateApplicationInput>;
     try {
       patch = buildPatchPayload(lastSyncedRef.current, form.getValues());
     } catch {

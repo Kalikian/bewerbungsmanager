@@ -1,4 +1,5 @@
 "use client";
+
 import { useFormContext, Controller } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -83,8 +84,9 @@ export default function BasicInfoFields() {
           placeholder="e.g. 5000"
           inputMode="numeric"
           {...register("salary", {
-            // Keep empty string as undefined; let Zod/backend coerce non-empty
-            setValueAs: (v: unknown) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+            // Keep empty string as "";
+            setValueAs: (v: unknown) =>
+              v === "" || v === null || (typeof v === "number" && Number.isNaN(v)) ? "" : v,
           })}
           aria-invalid={!!errors.salary}
         />

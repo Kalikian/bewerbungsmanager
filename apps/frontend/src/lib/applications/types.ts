@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createApplicationSchema, STATUSES } from "@shared";
+import { createApplicationSchema, updateApplicationSchema, STATUSES } from "@shared";
 import type { ApplicationStatus, Application } from "@shared";
 
 // RHF input type based on CREATE (same as new-form)
@@ -31,7 +31,7 @@ export const APPLICATION_DEFAULTS: ApplicationFormValues = {
   address: "",
   job_source: "",
   job_url: "",
-  salary: undefined,
+  salary: "",
   work_model: "",
   start_date: "",
   application_deadline: "",
