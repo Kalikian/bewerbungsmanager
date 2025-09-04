@@ -54,6 +54,7 @@ export const application = pgTable(
 
     start_date: date('start_date'),
     application_deadline: date('application_deadline'),
+    applied_date: date('applied_date'),
 
     // required; DB-level enum + default
     status: applicationStatus('status').notNull().default('open'),
