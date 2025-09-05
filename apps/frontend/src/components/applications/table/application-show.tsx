@@ -75,7 +75,7 @@ export default function ApplicationShow({ id }: { id: number }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold">{title}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <StatusCell id={app.id} value={app.status} onChangedAction={reload} />
             {app.work_model && (
               <span className="rounded-full border px-4 py-1">{app.work_model}</span>

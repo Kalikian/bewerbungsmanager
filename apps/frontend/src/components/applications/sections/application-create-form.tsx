@@ -15,7 +15,7 @@ import {
   type FormValues,
   type ApplicationPayload,
 } from "@/lib/applications/types";
-import { createApplication } from "@/lib/applications/api";
+import { createApplication } from "@/lib/api/applications";
 import { getToken } from "@/lib/http";
 import { applyIssues, messageFromApiError, type ApiErrorBody } from "@/lib/api-errors";
 

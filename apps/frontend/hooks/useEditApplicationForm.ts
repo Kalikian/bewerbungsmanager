@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 import type { FieldPath } from "react-hook-form";
-import {EDIT_UI_SCHEMA} from "../src/lib/applications/types";
 
 import type { Application } from "@shared";
 import { updateApplicationSchema, type UpdateApplicationInput } from "@shared";
@@ -18,7 +17,7 @@ import {
   FIELD_WHITELIST,
   type ApplicationFormValues,
 } from "@/lib/applications/types";
-import { patchApplication } from "@/lib/applications/api";
+import { patchApplication } from "@/lib/api/applications";
 import { getToken, parseJson } from "@/lib/http";
 import { applyIssues, messageFromApiError, type ApiErrorBody } from "@/lib/api-errors";
 
@@ -76,6 +75,11 @@ export function useEditApplicationForm(
   reload?: () => Promise<void>,
 ) {
   const router = useRouter();
+
+  const EDIT_UI_SCHEMA = updateApplicationSchema.extend({
+    job_title: z.string().trim().min(1, "Invalid Input"),
+    company: z.string().trim().min(1, "Invalid Input"),
+  });
 
   // RHF instance with UI types
   const form = useForm<ApplicationFormValues>({

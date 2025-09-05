@@ -1,7 +1,7 @@
 // Small, focused API helpers for Applications
 import { API_BASE, getToken, parseJson } from "@/lib/http";
 import type { Application as AppEntity } from "@shared";
-import type { ApplicationPayload } from "./types";
+import type { ApplicationPayload } from "../applications/types";
 
 /**
  * POST /applications

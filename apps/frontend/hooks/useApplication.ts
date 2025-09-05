@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getToken } from "@/lib/http";
 import { messageFromApiError } from "@/lib/api-errors";
-import { getApplicationById } from "@/lib/applications/api";
+import { getApplicationById } from "@/lib/api/applications";
 import type { Application as AppEntity } from "@shared";
 
 export function useApplication(id: number) {

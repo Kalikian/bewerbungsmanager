@@ -49,7 +49,7 @@ export function UserDropdown() {
         <DropdownMenuItem asChild>
           <Link href="/profile">My Profile</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

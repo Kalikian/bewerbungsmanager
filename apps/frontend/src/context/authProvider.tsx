@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { getAccount, login as apiLogin } from "../services/userApi";
+import { getAccount, login as apiLogin } from "../lib/api/users";
 import { clearToken, getToken } from "@lib/http";
 import type { UserPublic } from "@shared";
 

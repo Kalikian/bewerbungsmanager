@@ -21,7 +21,7 @@ import { isHttpError } from "@/lib/http";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { login as loginService } from "@/services/userApi";
+import { login as loginService } from "@/lib/api/users";
 
 const AFTER_LOGIN_PATH = "/applications"; // Path to redirect to after login
 
