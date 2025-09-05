@@ -55,6 +55,11 @@ export const FIELD_WHITELIST = [
   "applied_date",
 ] as const;
 
+export  const EDIT_UI_SCHEMA = updateApplicationSchema.extend({
+    job_title: z.string().trim().min(1, "Invalid Input"),
+    company: z.string().trim().min(1, "Invalid Input"),
+  });
+
 export function toTs(d?: string | null) {
   if (!d) return 0;
   const t = Date.parse(d);

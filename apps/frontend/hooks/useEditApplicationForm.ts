@@ -6,6 +6,9 @@ import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { z } from "zod";
+import type { FieldPath } from "react-hook-form";
+import {EDIT_UI_SCHEMA} from "../src/lib/applications/types";
 
 import type { Application } from "@shared";
 import { updateApplicationSchema, type UpdateApplicationInput } from "@shared";
@@ -76,7 +79,7 @@ export function useEditApplicationForm(
 
   // RHF instance with UI types
   const form = useForm<ApplicationFormValues>({
-    resolver: zodResolver(updateApplicationSchema) as unknown as Resolver<ApplicationFormValues>,
+    resolver: zodResolver(EDIT_UI_SCHEMA) as unknown as Resolver<ApplicationFormValues>,
     defaultValues: APPLICATION_DEFAULTS,
     mode: "onSubmit",
   });
@@ -98,6 +101,23 @@ export function useEditApplicationForm(
       toast("Please log in to update the application.");
       router.push("/login");
       return false;
+    }
+    // 1) strongly-typed list of required fields for the *UI*
+    const REQUIRED_FIELDS = [
+      "job_title",
+      "company",
+    ] as const satisfies readonly FieldPath<ApplicationFormValues>[];
+    // run UI validation first so empty required fields show inline errors
+    const ok = await form.trigger(["job_title", "company"]);
+    if (!ok) {
+      // (Optional) focus the first invalid field
+      const ok = await form.trigger(REQUIRED_FIELDS);
+      if (!ok) {
+        // focus first invalid field
+        const firstInvalid = REQUIRED_FIELDS.find((n) => form.getFieldState(n).invalid);
+        if (firstInvalid) form.setFocus(firstInvalid);
+        return false; // stop: no diff/patch/no-changes
+      }
     }
 
     // Build a minimal PATCH based on changes vs baseline
