@@ -7,7 +7,7 @@ import PageHeader from "@/components/layout/page-header";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-import ApplicationCreateForm from "@/components/applications/application-create-form";
+import ApplicationCreateForm from "@/components/applications/sections/application-create-form";
 
 export default function NewApplicationPage() {
   const router = useRouter();

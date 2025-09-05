@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getToken } from "@/lib/http";
 import PageHeader from "@/components/layout/page-header";
-import ApplicationsTable from "@/components/applications/applications-table";
+import ApplicationsTable from "@/components/applications/table/applications-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 

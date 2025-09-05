@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useApplication } from "@hooks/useApplication";
-import StatusCell from "@/components/applications/status-cell";
+import StatusCell from "@/components/applications/table/status-cell";
 import AddNoteDialog from "@/components/applications/dialogs/add-note-dialog";
 import AddAttachmentDialog from "@/components/applications/dialogs/add-attachment-dialog";
 
@@ -101,13 +101,15 @@ export default function ApplicationShow({ id }: { id: number }) {
         <Meta label="Source" value={app.job_source} />
         <Meta
           label="Contact"
-          value={[
-            app.contact_name,
-            app.contact_email,
-            app.contact_phone ? `(${app.contact_phone})` : null,
-          ]
-            .filter(Boolean)
-            .join(" · ") || "—"}
+          value={
+            [
+              app.contact_name,
+              app.contact_email,
+              app.contact_phone ? `(${app.contact_phone})` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ") || "—"
+          }
         />
         <Meta label="Salary" value={app.salary ? `${app.salary} €` : "—"} />
         <Meta

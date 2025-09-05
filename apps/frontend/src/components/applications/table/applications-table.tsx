@@ -12,15 +12,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Application } from "@shared";
 
 import { fmtDate } from "@/lib/applications/types";
 import { useApplicationsList } from "@hooks/useApplicationsList";
 
 import StatusCell from "./status-cell";
-import RowOverflow from "./application-row-overflow";
-import AddNoteDialog from "./dialogs/add-note-dialog";
-import AddAttachmentDialog from "./dialogs/add-attachment-dialog";
 import ApplicationRowActions from "./application-row-actions";
 import Link from "next/link";
 

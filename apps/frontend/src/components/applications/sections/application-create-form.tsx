@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { createApplicationSchema } from "@shared";
 
-import ApplicationForm from "./application-form";
+import ApplicationForm from "../forms/application-form";
 
 import {
   APPLICATION_DEFAULTS,

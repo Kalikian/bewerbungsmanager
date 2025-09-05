@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 
 import { useApplication } from "@hooks/useApplication";
 import { useEditApplicationForm } from "@hooks/useEditApplicationForm";
-import ApplicationForm from "./application-form";
+import ApplicationForm from "../forms/application-form";
 
 export default function ApplicationEditForm({ id }: { id: number }) {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function ApplicationEditForm({ id }: { id: number }) {
                 const ok = await onSubmit();
                 if (ok) {
                   toast.success("Changes saved");
-                  router.replace("/applications");
+                  router.replace(`/applications/${id}`);
                   router.refresh();
                 }
               })}
