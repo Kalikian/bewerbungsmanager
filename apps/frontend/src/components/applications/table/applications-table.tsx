@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,8 +22,13 @@ import StatusCell from "./status-cell";
 import ApplicationRowActions from "./application-row-actions";
 import Link from "next/link";
 
+function stop(e: React.SyntheticEvent) {
+  e.stopPropagation();
+}
+
 export default function ApplicationsTable() {
   const { items, loading, reload, setItems } = useApplicationsList();
+  const router = useRouter();
   const hasData = !!items && items.length > 0;
 
   const table = useMemo(() => {
@@ -39,17 +46,27 @@ export default function ApplicationsTable() {
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
+
         <TableBody>
           {items.map((a, idx) => (
-            <TableRow key={a.id}>
+            <TableRow
+              key={a.id}
+              role="link"
+              tabIndex={0}
+              className="cursor-pointer hover:bg-muted/40"
+              onClick={() => router.push(`/applications/${a.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push(`/applications/${a.id}`);
+                }
+              }}
+              aria-label={`Open ${a.job_title ?? "application"} at ${a.company ?? ""}`}
+            >
               <TableCell className="text-muted-foreground tabular-nums">{idx + 1}</TableCell>
-              <TableCell className="font-medium">
-                <Link href={`/applications/${a.id}`} className="hover:underline">
-                  {a.job_title ?? "—"}
-                </Link>
-              </TableCell>
+              <TableCell className="font-medium truncate">{a.job_title ?? "—"}</TableCell>
               <TableCell>{a.company ?? "—"}</TableCell>
-              <TableCell>
+              <TableCell onClick={stop} onKeyDown={stop}>
                 <StatusCell
                   id={a.id}
                   value={a.status}
@@ -62,14 +79,21 @@ export default function ApplicationsTable() {
               </TableCell>
               <TableCell>{a.work_model ?? "—"}</TableCell>
               <TableCell>{fmtDate((a as any).applied_date)}</TableCell>
-              <TableCell className="text-right">
-                <ApplicationRowActions
-                  id={a.id}
-                  title={a.job_title ?? undefined}
-                  onDeletedAction={() => {
-                    setItems((prev) => (prev ? prev.filter((x) => x.id !== a.id) : prev));
-                  }}
-                />
+              <TableCell className="text-right" onClick={stop} onKeyDown={stop}>
+                <div className="flex justify-end gap-1">
+                  <Button asChild variant="ghost" size="icon" aria-label="Open details">
+                    <Link href={`/applications/${a.id}`}>
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <ApplicationRowActions
+                    id={a.id}
+                    title={a.job_title ?? undefined}
+                    onDeletedAction={() => {
+                      setItems((prev) => (prev ? prev.filter((x) => x.id !== a.id) : prev));
+                    }}
+                  />
+                </div>
               </TableCell>
             </TableRow>
           ))}

@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           disableTransitionOnChange
         >
           <Header />
-          <main className="flex-grow">{children}</main>
+          <main className="flex-grow px-2 sm:px-3 lg:px-4">{children}</main>
           <Toaster richColors />
           <Footer />
         </ThemeProvider>

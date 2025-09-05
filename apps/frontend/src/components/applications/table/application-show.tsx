@@ -72,14 +72,13 @@ export default function ApplicationShow({ id }: { id: number }) {
 
   return (
     <div className="space-y-6">
-      {/* Header (im Content-Bereich) */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold">{title}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <StatusCell id={app.id} value={app.status} onChangedAction={reload} />
             {app.work_model && (
-              <span className="rounded-full border px-2 py-0.5 text-xs">{app.work_model}</span>
+              <span className="rounded-full border px-4 py-1">{app.work_model}</span>
             )}
           </div>
         </div>
@@ -108,7 +107,7 @@ export default function ApplicationShow({ id }: { id: number }) {
               app.contact_phone ? `(${app.contact_phone})` : null,
             ]
               .filter(Boolean)
-              .join(" · ") || "—"
+              .join(" | ") || "—"
           }
         />
         <Meta label="Salary" value={app.salary ? `${app.salary} €` : "—"} />
@@ -116,8 +115,8 @@ export default function ApplicationShow({ id }: { id: number }) {
           label="Job URL"
           value={
             app.job_url ? (
-              <a className="underline" href={app.job_url} target="_blank" rel="noreferrer">
-                Open posting
+              <a className="underline" href={app.job_url} target="_blank" rel="noopener noreferrer">
+                View Job
               </a>
             ) : (
               "—"
@@ -139,7 +138,7 @@ export default function ApplicationShow({ id }: { id: number }) {
         <TabsContent value="overview">
           <Card>
             <CardContent className="p-4 text-sm text-muted-foreground">
-              Overview content (optional) – z. B. Beschreibung, interne Felder …
+              Overview content (optional)
             </CardContent>
           </Card>
         </TabsContent>
@@ -147,7 +146,7 @@ export default function ApplicationShow({ id }: { id: number }) {
         <TabsContent value="notes">
           <Card>
             <CardContent className="p-4 text-sm">
-              {/* Hier später: Composer + NotesList */}
+              {/* Here later: Composer + NotesList */}
               Notes coming soon…
             </CardContent>
           </Card>
@@ -156,7 +155,7 @@ export default function ApplicationShow({ id }: { id: number }) {
         <TabsContent value="attachments">
           <Card>
             <CardContent className="p-4 text-sm">
-              {/* Hier später: Upload + AttachmentList */}
+              {/* Here later: Upload + AttachmentList */}
               Attachments coming soon…
             </CardContent>
           </Card>
@@ -165,7 +164,7 @@ export default function ApplicationShow({ id }: { id: number }) {
         <TabsContent value="timeline">
           <Card>
             <CardContent className="p-4 text-sm">
-              {/* Hier später: kombinierte Ereignis-Timeline */}
+              {/* Here later: combined event timeline */}
               Timeline coming soon…
             </CardContent>
           </Card>
