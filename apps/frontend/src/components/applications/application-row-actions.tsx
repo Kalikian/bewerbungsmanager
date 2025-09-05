@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,11 +13,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 import { API_BASE, getToken, parseJson } from "@/lib/http";
 import { messageFromApiError, type ApiErrorBody } from "@/lib/api-errors";
+import ApplicationRowOverflow from "./application-row-overflow";
 
 type Props = {
   id: number;
@@ -58,12 +57,8 @@ export default function ApplicationRowActions({ id, title, onDeletedAction }: Pr
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Delete application">
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </AlertDialogTrigger>
-
+      {/* Kebab als Trigger: öffnet nur den Dialog */}
+      <ApplicationRowOverflow onDeleteAction={() => setOpen(true)} />
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete application?</AlertDialogTitle>

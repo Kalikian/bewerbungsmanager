@@ -41,11 +41,11 @@ export interface Application {
   address?: string;
   job_source?: string;
   job_url?: string;
-  salary?: number;
+  salary?: number | null;
   work_model?: string | null;
   start_date?: string | null;
   application_deadline?: string | null;
-  applied_date?: string | null
+  applied_date?: string | null;
   status: ApplicationStatus;
   created_at: string;
 }

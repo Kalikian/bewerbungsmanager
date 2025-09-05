@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Trash2 } from "lucide-react";
 
-type RowOverflowProps = {
+type ApplicationRowOverflowProps = {
   onDeleteAction?: () => void;
   deleteLabel?: string;
   children?: React.ReactNode;
@@ -18,13 +18,13 @@ type RowOverflowProps = {
   disabled?: boolean;
 };
 
-export default function RowOverflow({
+export default function ApplicationRowOverflow({
   onDeleteAction,
   deleteLabel = "Delete",
   children,
   align = "end",
   disabled,
-}: RowOverflowProps) {
+}: ApplicationRowOverflowProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

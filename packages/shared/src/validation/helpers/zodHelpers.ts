@@ -8,8 +8,7 @@ import { z } from 'zod';
 export const emptyToUndef = (val: unknown) =>
   typeof val === 'string' ? (val.trim() === '' ? undefined : val.trim()) : val;
 
-export const emptyToNull = (v: unknown) =>
-  v === "" || v === null ? null : v;
+export const emptyToNull = (v: unknown) => (v === '' || v === null ? null : v);
 
 /**
  * Preprocessor for date fields to normalize into YYYY-MM-DD format.
@@ -21,9 +20,9 @@ export const toYYYYMMDD = z.preprocess(
     // allow empty → undefined (optional)
     if (v === undefined) return undefined;
     // accept only already-correct strings from <input type="date">
-    if (typeof v === "string") return v.trim();
+    if (typeof v === 'string') return v.trim();
     // any other type will fail the regex below
     return v;
   },
-  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected date in YYYY-MM-DD"),
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected date in YYYY-MM-DD'),
 );

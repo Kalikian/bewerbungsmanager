@@ -40,7 +40,7 @@ export default function ApplicationsTable() {
             <TableHead>Status</TableHead>
             <TableHead>Work model</TableHead>
             <TableHead>Applied</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -67,11 +67,13 @@ export default function ApplicationsTable() {
               <TableCell>{a.work_model ?? "—"}</TableCell>
               <TableCell>{fmtDate((a as any).applied_date)}</TableCell>
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <AddNoteDialog app={a as Application} onAddedAction={reload} />
-                  <AddAttachmentDialog app={a as Application} onAddedAction={reload} />
-                  <ApplicationRowActions id={a.id} title={a.job_title} onDeletedAction={reload} />
-                </div>
+                <ApplicationRowActions
+                  id={a.id}
+                  title={a.job_title ?? undefined}
+                  onDeletedAction={() => {
+                    setItems((prev) => (prev ? prev.filter((x) => x.id !== a.id) : prev));
+                  }}
+                />
               </TableCell>
             </TableRow>
           ))}

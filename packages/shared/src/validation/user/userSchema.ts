@@ -112,11 +112,13 @@ export const userIdParamSchema = z
   })
   .strict();
 
-  /* ------------------------- for public(frontend) use ------------------------- */
-export const userPublicSchema = z.object({
-  id: z.number().int().positive(),
-  email: Email, 
-  firstName: Name,
-  lastName: Name,
-}).strict();
+/* ------------------------- for public(frontend) use ------------------------- */
+export const userPublicSchema = z
+  .object({
+    id: z.number().int().positive(),
+    email: Email,
+    firstName: Name,
+    lastName: Name,
+  })
+  .strict();
 export type UserPublic = z.output<typeof userPublicSchema>;

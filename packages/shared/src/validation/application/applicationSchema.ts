@@ -47,7 +47,7 @@ const baseCreateShape = {
 } as const;
 
 /* ------------------------- UPDATE base (clearable) ------------------------- */
-/** CHANGE: Base für UPDATE – optionale Felder: '' -> null (löschen erlaubt) */
+/* Base für UPDATE – optionale Felder: '' -> null (löschen erlaubt) */
 const baseUpdateShape = {
   // Hinweis: job_title & company beim Update nicht nullbar (UI erzwingt Pflicht),
   // leer lassen bedeutet: kein Update. Wenn du sie auch löschbar willst, analog unten auf nullbar stellen.
@@ -79,14 +79,18 @@ const baseUpdateShape = {
     emptyToNull,
     z
       .union([
-        z.string().trim().max(1000, { message: 'URL too long' }).pipe(z.url({ message: 'Invalid URL' })),
+        z
+          .string()
+          .trim()
+          .max(1000, { message: 'URL too long' })
+          .pipe(z.url({ message: 'Invalid URL' })),
         z.null(),
       ])
       .optional(),
   ),
   salary: z.preprocess(
     emptyToNull,
-    z.union([z.coerce.number().nonnegative(), z.null()]).optional(),
+    z.union([z.null(), z.coerce.number().nonnegative()]).optional(),
   ),
   work_model: z.preprocess(emptyToNull, z.union([z.string().max(50), z.null()]).optional()),
   start_date: z.preprocess(emptyToNull, z.union([toYYYYMMDD, z.null()]).optional()),
@@ -132,4 +136,3 @@ export const applicationIdParamSchema = z
     id: z.coerce.number().int().positive(),
   })
   .strict();
-
