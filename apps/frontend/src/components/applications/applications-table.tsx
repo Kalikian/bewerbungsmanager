@@ -48,7 +48,7 @@ export default function ApplicationsTable() {
             <TableRow key={a.id}>
               <TableCell className="text-muted-foreground tabular-nums">{idx + 1}</TableCell>
               <TableCell className="font-medium">
-                <Link href={`/applications/${a.id}/edit`} className="hover:underline">
+                <Link href={`/applications/${a.id}`} className="hover:underline">
                   {a.job_title ?? "—"}
                 </Link>
               </TableCell>
