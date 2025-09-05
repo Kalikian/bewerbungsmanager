@@ -1,7 +1,11 @@
 // apps/frontend/app/applications/[id]/page.tsx
-import ApplicationShow from "@/components/applications/application-show";
+import ApplicationShow from "@/components/applications/table/application-show";
 
-export default function Page({ params }: { params: { id: string } }) {
-  const id = Number(params.id);
-  return <ApplicationShow id={id} />;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;           
+  return <ApplicationShow id={Number(id)} />;
 }

@@ -17,7 +17,7 @@ import {
 
 import { API_BASE, getToken, parseJson } from "@/lib/http";
 import { messageFromApiError, type ApiErrorBody } from "@/lib/api-errors";
-import ApplicationRowOverflow from "../application-row-overflow";
+import ApplicationRowOverflow from "./application-row-overflow";
 
 type Props = {
   id: number;
