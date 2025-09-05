@@ -16,6 +16,7 @@ export function toFormDefaults(a: AppEntity | null): FormValues {
       job_url: "",
       salary: undefined,
       work_model: "",
+      applied_date: "",
       start_date: "",
       application_deadline: "",
     };
@@ -32,6 +33,7 @@ export function toFormDefaults(a: AppEntity | null): FormValues {
     job_url: a.job_url ?? "",
     salary: a.salary ?? undefined,
     work_model: a.work_model ?? "",
+    applied_date: a.applied_date ?? "",
     start_date: a.start_date ?? "",
     application_deadline: a.application_deadline ?? "",
   };

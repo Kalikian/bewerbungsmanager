@@ -7,11 +7,11 @@ export async function createApplication(application: NewApplication): Promise<Ap
   const query = `
     INSERT INTO application (
       user_id, job_title, company, contact_name, contact_email, contact_phone,
-      address, job_source, job_url, salary, work_model, start_date,
+      address, job_source, job_url, salary, work_model, applied_date, start_date,
       application_deadline, status
     )
     VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
     )
     RETURNING *;
   `;
@@ -28,6 +28,7 @@ export async function createApplication(application: NewApplication): Promise<Ap
     application.job_url ?? null,
     application.salary ?? null,
     application.work_model ?? null,
+    application.applied_date ?? null,
     application.start_date ?? null,
     application.application_deadline ?? null,
     application.status ?? 'open', // Default status if not provided
