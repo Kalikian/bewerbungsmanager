@@ -57,7 +57,6 @@ export default function ApplicationRowActions({ id, title, onDeletedAction }: Pr
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      {/* Kebab als Trigger: öffnet nur den Dialog */}
       <ApplicationRowOverflow onDeleteAction={() => setOpen(true)} />
       <AlertDialogContent>
         <AlertDialogHeader>

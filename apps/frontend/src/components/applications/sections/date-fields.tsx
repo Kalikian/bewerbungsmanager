@@ -12,14 +12,30 @@ export default function DateFields() {
   } = useFormContext<FormValues>();
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-3">
+      {/* Applied date */}
+      <div className="grid gap-2">
+        <Label htmlFor="applied_date">Applied date</Label>
+        <Input
+          id="applied_date"
+          type="date"
+          {...register("applied_date", {
+            setValueAs: (v) => (typeof v === "string" && v.trim() === "" ? "" : v),
+          })}
+          aria-invalid={!!errors.applied_date}
+        />
+        {errors.applied_date && (
+          <p className="text-sm text-red-600">{errors.applied_date.message as any}</p>
+        )}
+      </div>
+
+      {/* Start date */}
       <div className="grid gap-2">
         <Label htmlFor="start_date">Start date</Label>
         <Input
           id="start_date"
           type="date"
           {...register("start_date", {
-            // KEEP empty string instead of something falsy being coerced
             setValueAs: (v) => (typeof v === "string" && v.trim() === "" ? "" : v),
           })}
           aria-invalid={!!errors.start_date}
@@ -29,6 +45,7 @@ export default function DateFields() {
         )}
       </div>
 
+      {/* Application deadline */}
       <div className="grid gap-2">
         <Label htmlFor="application_deadline">Application deadline</Label>
         <Input
