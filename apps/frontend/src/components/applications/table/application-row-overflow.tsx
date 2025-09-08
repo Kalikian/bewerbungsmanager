@@ -1,11 +1,13 @@
 "use client";
 
-import * as React from "react";
+import React from "react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 type ApplicationRowOverflowProps = {
@@ -19,20 +21,37 @@ type ApplicationRowOverflowProps = {
 
 export default function ApplicationRowOverflow({
   onDeleteAction,
-  deleteItem
+  deleteLabel = "Delete",
+  children,
+  align = "end",
+  disabled,
+  deleteItem,
 }: ApplicationRowOverflowProps) {
-  return ( 
+  return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>{/* … dein Trigger (Kebab) … */}</DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {/* … andere Menüeinträge … */}
+      <DropdownMenuTrigger asChild>
+        {children ? (
+          <span>{children}</span>
+        ) : (
+          <Button variant="ghost" size="icon" disabled={disabled}>
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        )}
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align={align}>
+        {/* More menu items could be here … */}
 
         {deleteItem ?? (
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
-            onClick={onDeleteAction}
+            onSelect={(e) => {
+              e.preventDefault();
+              onDeleteAction?.();
+            }}
           >
-            Delete
+            <Trash2 className="mr-2 h-4 w-4" /> {deleteLabel}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

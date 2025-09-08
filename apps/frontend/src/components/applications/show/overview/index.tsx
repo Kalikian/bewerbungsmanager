@@ -89,6 +89,12 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
             id={id}
             asChild
             onDeletedAction={() => router.push("/applications")}
+            confirmTitle="Delete application?"
+            confirmDescription={
+              title
+                ? `This action cannot be undone. „${title}“ will be permanently removed.`
+                : "This entry will be permanently removed."
+            }
           >
             <Button variant="destructive" size="sm">
               <Trash2 className="mr-2 h-4 w-4" /> Delete

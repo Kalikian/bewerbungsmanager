@@ -79,7 +79,11 @@ export default function DeleteApplicationAction({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={doDelete} disabled={loading}>
+          <AlertDialogAction
+            onClick={doDelete}
+            disabled={loading}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:ring-2 focus:ring-destructive"
+          >
             {loading ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
