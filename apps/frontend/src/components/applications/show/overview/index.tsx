@@ -18,6 +18,9 @@ import type { NoteItem, FileItem } from "./notes-and-attachments-tabs";
 
 import AddNoteDialog from "@/components/applications/dialogs/add-note-dialog";
 import AddAttachmentDialog from "@/components/applications/dialogs/add-attachment-dialog";
+import DeleteApplicationAction from "@/components/applications/actions/delete-application-action";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 export default function ApplicationSlimOverview({ id }: { id: number }) {
   const router = useRouter();
@@ -81,9 +84,17 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
         onEditAction={() => router.push(`/applications/${id}/edit`)}
         onAddNoteAction={() => setNoteOpen(true)}
         onAddAttachmentAction={() => setAttOpen(true)}
-        onDeleteAction={() => {
-          /* implement delete flow */
-        }}
+        deleteAction={
+          <DeleteApplicationAction
+            id={id}
+            asChild
+            onDeletedAction={() => router.push("/applications")}
+          >
+            <Button variant="destructive" size="sm">
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </Button>
+          </DeleteApplicationAction>
+        }
       />
 
       <InfoChipsWithApplied

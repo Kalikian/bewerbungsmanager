@@ -5,37 +5,24 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Pencil, FilePlus, FileUp, Trash2 } from "lucide-react";
-import AddNoteDialog from "@/components/applications/dialogs/add-note-dialog";
-import AddAttachmentDialog from "@/components/applications/dialogs/add-attachment-dialog";
-import type { Application } from "@shared";
-
-export type SlimHeaderProps = {
-  title: string;
-  company?: string;
-  status?: string;
-  onEdit?: () => void;
-  onAddNote?: () => void;
-  onAddAttachment?: () => void;
-  onDelete?: () => void;
-};
+import { Pencil, FilePlus, FileUp } from "lucide-react";
 
 export default function SlimHeader({
   title,
   company,
-  status,
+  status, // keep flexible
   onEditAction,
   onAddNoteAction,
   onAddAttachmentAction,
-  onDeleteAction,
+  deleteAction,
 }: {
   title: string;
   company?: string;
-  status?: string; // keep flexible
+  status?: string;
   onEditAction?: () => void;
   onAddNoteAction?: () => void;
   onAddAttachmentAction?: () => void;
-  onDeleteAction?: () => void;
+  deleteAction?: React.ReactNode;
 }) {
   return (
     <div className="w-full border-b bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -92,18 +79,8 @@ export default function SlimHeader({
                 </Tooltip>
               </TooltipProvider>
             )}
-            {onDeleteAction && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="destructive" size="sm" onClick={onDeleteAction}>
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Permanently delete</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+            {/* Delete comes in ready*/}
+            {deleteAction}
           </div>
         </div>
       </div>

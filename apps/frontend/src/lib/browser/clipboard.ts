@@ -7,6 +7,6 @@ export async function copyToClipboard(text?: string) {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    return false; // z.B. HTTP statt HTTPS
+    return false;
   }
 }
