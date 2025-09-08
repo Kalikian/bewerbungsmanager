@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Pencil, FilePlus, FileUp, Trash2 } from "lucide-react";
+import AddNoteDialog from "@/components/applications/dialogs/add-note-dialog";
+import AddAttachmentDialog from "@/components/applications/dialogs/add-attachment-dialog";
+import type { Application } from "@shared";
 
 export type SlimHeaderProps = {
   title: string;

@@ -4,24 +4,27 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { API_BASE, getToken, parseJson } from "@/lib/http";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { Application } from "@shared";
 
 export default function AddNoteDialog({
   app,
   onAddedAction,
+  // make dialog controllable from outside
+  open: controlledOpen,
+  onOpenChangeAction,
 }: {
   app: Application;
   onAddedAction: () => void;
+  open?: boolean;                         
+  onOpenChangeAction?: (open: boolean) => void; 
 }) {
-  const [open, setOpen] = useState(false);
+  // keep internal state, but only use it when uncontrolled
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = controlledOpen ?? uncontrolledOpen;
+  const setOpen = onOpenChangeAction ?? setUncontrolledOpen;
+
   const [text, setText] = useState("");
   const disabled = !text.trim();
 
@@ -40,7 +43,7 @@ export default function AddNoteDialog({
         return;
       }
       toast.success("Note added");
-      setOpen(false);
+      setOpen(false); // close dialog
       setText("");
       onAddedAction();
     } catch {
@@ -49,31 +52,23 @@ export default function AddNoteDialog({
   }
 
   return (
-    <>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        Add note
-      </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add note · {app.job_title}</DialogTitle>
-          </DialogHeader>
-          <Textarea
-            rows={6}
-            placeholder="Write your note…"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={submit} disabled={disabled}>
-              Save note
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Dialog open={open} onOpenChange={setOpen}>
+      {/* IMPORTANT: no default trigger when controlled from outside */}
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add note · {app.job_title}</DialogTitle>
+        </DialogHeader>
+        <Textarea
+          rows={6}
+          placeholder="Write your note…"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={submit} disabled={disabled}>Save note</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
