@@ -4,7 +4,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { API_BASE, getToken, parseJson } from "@/lib/http";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { Application } from "@shared";
 
@@ -17,8 +24,8 @@ export default function AddNoteDialog({
 }: {
   app: Application;
   onAddedAction: () => void;
-  open?: boolean;                         
-  onOpenChangeAction?: (open: boolean) => void; 
+  open?: boolean;
+  onOpenChangeAction?: (open: boolean) => void;
 }) {
   // keep internal state, but only use it when uncontrolled
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -57,6 +64,10 @@ export default function AddNoteDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add note · {app.job_title}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Write a short note for this application. The note will be saved and shown in the Notes
+            tab.
+          </DialogDescription>
         </DialogHeader>
         <Textarea
           rows={6}
@@ -65,8 +76,12 @@ export default function AddNoteDialog({
           onChange={(e) => setText(e.target.value)}
         />
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={submit} disabled={disabled}>Save note</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={submit} disabled={disabled}>
+            Save note
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

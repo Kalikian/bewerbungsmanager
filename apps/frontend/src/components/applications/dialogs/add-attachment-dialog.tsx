@@ -4,7 +4,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { API_BASE, getToken, parseJson } from "@/lib/http";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { Application } from "@shared";
 
@@ -16,7 +23,7 @@ export default function AddAttachmentDialog({
 }: {
   app: Application;
   onAddedAction: () => void;
-  open?: boolean;      
+  open?: boolean;
   onOpenChangeAction?: (open: boolean) => void;
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -60,11 +67,20 @@ export default function AddAttachmentDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!busy) setOpen(o); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!busy) setOpen(o);
+      }}
+    >
       {/* IMPORTANT: no default trigger when controlled from outside */}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add attachment · {app.job_title}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Choose a file and optionally add a description. The file will be attached to this
+            application.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -78,8 +94,12 @@ export default function AddAttachmentDialog({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>Cancel</Button>
-          <Button onClick={submit} disabled={!file || busy}>{busy ? "Uploading…" : "Upload"}</Button>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+            Cancel
+          </Button>
+          <Button onClick={submit} disabled={!file || busy}>
+            {busy ? "Uploading…" : "Upload"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

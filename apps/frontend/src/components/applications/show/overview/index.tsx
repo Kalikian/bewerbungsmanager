@@ -3,25 +3,55 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { useApplication } from "@hooks/useApplication";
+import { useApplicationNotes } from "@hooks/useApplicationNotes";
+import { useApplicationAttachments } from "@hooks/useApplicationAttachments";
+
 import { relativeApplied } from "@/lib/format";
 
 import SlimHeader from "./slim-header";
 import InfoChipsWithApplied from "./info-chips-with-applied";
 import SingleColumnDetails from "./single-column-details";
 import NotesAndAttachmentsTabs from "./notes-and-attachments-tabs";
+import type { NoteItem, FileItem } from "./notes-and-attachments-tabs";
 
 import AddNoteDialog from "@/components/applications/dialogs/add-note-dialog";
 import AddAttachmentDialog from "@/components/applications/dialogs/add-attachment-dialog";
 
 export default function ApplicationSlimOverview({ id }: { id: number }) {
   const router = useRouter();
+
+  // hooks must be called unconditionally and before any conditional return
   const { entity, loading } = useApplication(id);
 
-  // Hooks dürfen nicht bedingt sein – immer zuerst aufrufen:
   const [noteOpen, setNoteOpen] = useState(false);
-  const [attOpen,  setAttOpen]  = useState(false);
+  const [attOpen, setAttOpen] = useState(false);
 
+  const { items: notesRaw, reload: reloadNotes } = useApplicationNotes(id);
+  const { items: filesRaw, reload: reloadFiles } = useApplicationAttachments(id);
+
+  // map backend/shared models -> UI models (no hooks here)
+  const toIso = (v: unknown): string => {
+    if (typeof v === "string") return v;
+    const d = new Date(String(v));
+    return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+    // ^ defensive: fall back to now if the date is invalid
+  };
+
+  const notes: NoteItem[] = (notesRaw ?? []).map((n: any) => ({
+    id: n.id,
+    created_at: toIso(n.created_at),
+    text: n.text ?? n.content ?? "",
+  }));
+
+  const files: FileItem[] = (filesRaw ?? []).map((f: any) => ({
+    id: f.id,
+    name: f.name ?? f.filename ?? f.original_name ?? `file-${f.id}`,
+    size_bytes: f.size_bytes ?? f.size ?? undefined,
+  }));
+
+  // after all hooks are called, you can return early
   if (loading || !entity) return null;
 
   const title = entity.job_title ?? "Application";
@@ -42,10 +72,6 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
     (entity as any).applied_date ??
     (typeof entity.created_at === "string" ? entity.created_at.slice(0, 10) : undefined);
 
-  // TODO: replace these with real hooks
-  const demoNotes: { id: number; created_at: string; text: string }[] = [];
-  const demoFiles: { id: number; name: string; size_bytes?: number }[] = [];
-
   return (
     <div className="min-h-screen">
       <SlimHeader
@@ -55,7 +81,9 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
         onEditAction={() => router.push(`/applications/${id}/edit`)}
         onAddNoteAction={() => setNoteOpen(true)}
         onAddAttachmentAction={() => setAttOpen(true)}
-        onDeleteAction={() => { /* implement delete flow */ }}
+        onDeleteAction={() => {
+          /* implement delete flow */
+        }}
       />
 
       <InfoChipsWithApplied
@@ -73,19 +101,25 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
         jobUrl={jobUrl}
       />
 
-      <NotesAndAttachmentsTabs notes={demoNotes} files={demoFiles} />
+      <NotesAndAttachmentsTabs notes={notes} files={files} />
 
       <AddNoteDialog
         app={entity}
         open={noteOpen}
         onOpenChangeAction={setNoteOpen}
-        onAddedAction={() => { router.refresh(); }}
+        onAddedAction={() => {
+          setNoteOpen(false);
+          reloadNotes();
+        }}
       />
       <AddAttachmentDialog
         app={entity}
         open={attOpen}
         onOpenChangeAction={setAttOpen}
-        onAddedAction={() => { router.refresh(); }}
+        onAddedAction={() => {
+          setAttOpen(false);
+          reloadFiles();
+        }}
       />
     </div>
   );

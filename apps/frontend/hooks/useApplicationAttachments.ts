@@ -40,4 +40,3 @@ export function useApplicationAttachments(applicationId: number) {
 
   return { items, loading, reload: load, setItems } as const;
 }
-
