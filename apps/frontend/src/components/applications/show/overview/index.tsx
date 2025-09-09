@@ -21,7 +21,6 @@ import AddAttachmentDialog from "@/components/applications/dialogs/add-attachmen
 import DeleteApplicationAction from "@/components/applications/actions/delete-application-action";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 export default function ApplicationSlimOverview({ id }: { id: number }) {
   const router = useRouter();
@@ -32,7 +31,7 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
   const [noteOpen, setNoteOpen] = useState(false);
   const [attOpen, setAttOpen] = useState(false);
 
-  // Notes-Hook inkl. edit/remove
+  // Notes hook incl. edit/remove
   const {
     items: notesRaw,
     reload: reloadNotes,
@@ -42,12 +41,14 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
 
   const { items: filesRaw, reload: reloadFiles } = useApplicationAttachments(id);
 
+  // editing state for reusing AddNoteDialog as edit dialog
+  const [editing, setEditing] = useState<{ id: number; text: string } | null>(null);
+
   // map backend/shared models -> UI models (no hooks here)
   const toIso = (v: unknown): string => {
     if (typeof v === "string") return v;
     const d = new Date(String(v));
     return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
-    // ^ defensive: fall back to now if the date is invalid
   };
 
   const notes: NoteItem[] = (notesRaw ?? []).map((n: any) => ({
@@ -126,27 +127,19 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
         jobUrl={jobUrl}
       />
 
-      {/*  Actions an Tabs durchreichen */}
+      {/* Actions in Tabs durchreichen */}
       <NotesAndAttachmentsTabs
         notes={notes}
         files={files}
         onEditNoteAction={(noteId, currentText) => {
-          const next = window.prompt("Edit note", currentText ?? "");
-          if (next === null) return; // cancelled
-          const trimmed = next.trim();
-          if (!trimmed) {
-            toast.error("Note cannot be empty");
-            editNote(Number(noteId), { text: trimmed }); // ok
-            return;
-          }
-          // cast id to number und save
-          editNote(Number(noteId), { text: trimmed });
+          setEditing({ id: Number(noteId), text: currentText ?? "" });
         }}
         onDeleteNoteAction={(noteId) => {
           removeNote(Number(noteId));
         }}
       />
 
+      {/* CREATE note dialog */}
       <AddNoteDialog
         app={entity}
         open={noteOpen}
@@ -156,6 +149,30 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
           reloadNotes();
         }}
       />
+
+      {/* EDIT note dialog (gleicher Dialog) */}
+      {editing && (
+        <AddNoteDialog
+          app={entity}
+          open={true}
+          onOpenChangeAction={(o) => {
+            if (!o) setEditing(null);
+          }}
+          initialText={editing.text}
+          titleOverride={`Edit note · ${entity.job_title ?? ""}`}
+          ctaLabelOverride="Save changes"
+          onAddedAction={() => {
+            setEditing(null);
+            reloadNotes();
+          }}
+          onSubmitOverrideAction={async (text: string) => {
+            const result = await editNote(editing.id, { text });
+            return !!result;
+          }}
+        />
+      )}
+
+      {/* ATTACHMENT dialog – nutzt attOpen + reloadFiles */}
       <AddAttachmentDialog
         app={entity}
         open={attOpen}
