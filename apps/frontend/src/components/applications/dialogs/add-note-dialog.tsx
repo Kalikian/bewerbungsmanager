@@ -32,10 +32,10 @@ export default function AddNoteDialog({
   onAddedAction: () => void;
   open?: boolean;
   onOpenChangeAction?: (open: boolean) => void;
-  initialText?: string;                   
-  titleOverride?: string;                    
-  ctaLabelOverride?: string;              
-  onSubmitOverrideAction?: (text: string) => Promise<boolean>; 
+  initialText?: string;
+  titleOverride?: string;
+  ctaLabelOverride?: string;
+  onSubmitOverrideAction?: (text: string) => Promise<boolean>;
 }) {
   // keep internal state, but only use it when uncontrolled
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -102,7 +102,8 @@ export default function AddNoteDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="sr-only">
-            Write a short note for this application. The note will be saved and shown in the Notes tab.
+            Write a short note for this application. The note will be saved and shown in the Notes
+            tab.
           </DialogDescription>
         </DialogHeader>
         <Textarea

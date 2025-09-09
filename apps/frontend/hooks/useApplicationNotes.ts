@@ -25,7 +25,9 @@ export function useApplicationNotes(applicationId: number) {
     }
   }, [applicationId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const add = useCallback(
     async (text: string) => {
@@ -64,28 +66,28 @@ export function useApplicationNotes(applicationId: number) {
     [applicationId],
   );
 
-const remove = useCallback(
-  async (noteId: number) => {
-    const prev = items;
-    setItems((xs) => xs.filter((n) => n.id !== noteId)); // optimistic
-    try {
-      const { res, body } = await deleteNote(applicationId, noteId);
-      if (!res.ok) {
-        console.error("notes.remove status:", res.status, body);
-        throw body;
+  const remove = useCallback(
+    async (noteId: number) => {
+      const prev = items;
+      setItems((xs) => xs.filter((n) => n.id !== noteId)); // optimistic
+      try {
+        const { res, body } = await deleteNote(applicationId, noteId);
+        if (!res.ok) {
+          console.error("notes.remove status:", res.status, body);
+          throw body;
+        }
+        toast.success("Note deleted");
+        return true;
+      } catch (err: any) {
+        console.error("notes.remove error:", err);
+        setItems(prev); // rollback
+        const msg = err?.message ?? err?.error ?? err?.detail ?? "Failed to delete note";
+        toast.error(typeof msg === "string" ? msg : "Failed to delete note");
+        return false;
       }
-      toast.success("Note deleted");
-      return true;
-    } catch (err: any) {
-      console.error("notes.remove error:", err);
-      setItems(prev); // rollback
-      const msg = err?.message ?? err?.error ?? err?.detail ?? "Failed to delete note";
-      toast.error(typeof msg === "string" ? msg : "Failed to delete note");
-      return false;
-    }
-  },
-  [applicationId, items],
-);
+    },
+    [applicationId, items],
+  );
 
   return { items, loading, reload: load, add, edit, remove, setItems } as const;
 }

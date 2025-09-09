@@ -47,7 +47,7 @@ export default function NotesAndAttachmentsTabs({
             {notes.map((n) => (
               <Card key={n.id}>
                 <CardContent className="pt-4">
-                  <div className="mb-1 flex items-center justify-between">
+                  <div className="-mt-6 mb-1 flex items-center justify-between">
                     <div className="text-xs text-muted-foreground">{formatDate(n.created_at)}</div>
 
                     {(onEditNoteAction || onDeleteNoteAction) && (

@@ -42,45 +42,64 @@ export default function SlimHeader({
           </div>
 
           {/* right side: only actions */}
-          <div className="flex items-center gap-2">
-            {onEditAction && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="secondary" size="sm" onClick={onEditAction}>
-                      <Pencil className="mr-2 h-4 w-4" /> Edit
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Edit this application</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            {onAddNoteAction && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={onAddNoteAction}>
-                      <FilePlus className="mr-2 h-4 w-4" /> Add note
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Add a quick note</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            {onAddAttachmentAction && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={onAddAttachmentAction}>
-                      <FileUp className="mr-2 h-4 w-4" /> Add attachment
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Upload files</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="order-1 shrink-0">
+              {onEditAction && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={onEditAction}
+                        className="shrink-0 whitespace-nowrap"
+                      >
+                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit this application</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+            <div className="order-3 w-full sm:order-2 sm:w-auto flex justify-end gap-2">
+              {onAddNoteAction && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onAddNoteAction}
+                        className="shrink-0 whitespace-nowrap"
+                      >
+                        <FilePlus className="mr-2 h-4 w-4" /> Add note
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Add a quick note</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {onAddAttachmentAction && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onAddAttachmentAction}
+                        className="shrink-0 whitespace-nowrap"
+                      >
+                        <FileUp className="mr-2 h-4 w-4" /> Add attachment
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Upload files</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
             {/* Delete comes in ready*/}
-            {deleteAction}
+            <div className="order-2 sm:order-3 shrink-0">{deleteAction}</div>
           </div>
         </div>
       </div>
