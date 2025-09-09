@@ -136,10 +136,11 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
           const trimmed = next.trim();
           if (!trimmed) {
             toast.error("Note cannot be empty");
+            editNote(Number(noteId), { text: trimmed }); // ok
             return;
           }
           // cast id to number und save
-          editNote(Number(noteId), { content: trimmed });
+          editNote(Number(noteId), { text: trimmed });
         }}
         onDeleteNoteAction={(noteId) => {
           removeNote(Number(noteId));

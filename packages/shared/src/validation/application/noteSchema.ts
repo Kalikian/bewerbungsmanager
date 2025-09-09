@@ -78,6 +78,7 @@ export type NotesApplicationIdParams = z.infer<typeof notesApplicationIdParamSch
  */
 export const noteIdParamSchema = z
   .object({
+    applicationId: z.coerce.number().int().positive(),
     noteId: z.coerce.number().int().positive(),
   })
   .strict();

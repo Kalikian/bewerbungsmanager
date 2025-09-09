@@ -39,7 +39,7 @@ export default function AddNoteDialog({
   async function submit() {
     try {
       setSaving(true);
-      const { res, body } = await createNote(app.id, { content: text.trim() });
+      const { res, body } = await createNote(app.id, { text: text.trim() });
       if (!res.ok) {
         toast.error((body as any)?.message ?? "Failed to add note");
         return;
