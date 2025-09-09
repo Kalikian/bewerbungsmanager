@@ -19,16 +19,15 @@ export function formatDate(value?: string, locale = "de-DE") {
 }
 
 const DAY = 24 * 60 * 60 * 1000;
-const startOfLocalDay = (d: Date) =>
-  new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const startOfLocalDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
 export type RelativeAppliedOptions = {
-  asLabel?: boolean;   // true => "Applied …"/"Applies …", false => "in 3 days"/"3 days ago"
-  verbPast?: string;   // Default: "Applied"
+  asLabel?: boolean; // true => "Applied …"/"Applies …", false => "in 3 days"/"3 days ago"
+  verbPast?: string; // Default: "Applied"
   verbFuture?: string; // Default: "Applies"
   todayLabel?: string; // Optional: overwrites "Applied today"
-  empty?: string;      // Default: "-"
-  locale?: string;     // Default: "en"
+  empty?: string; // Default: "-"
+  locale?: string; // Default: "en"
 };
 
 export function relativeApplied(
@@ -53,7 +52,7 @@ export function relativeApplied(
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const rel = diffDays === 0 ? "today" : rtf.format(diffDays, "day");
 
-  if (!asLabel) return rel;                   // "in 3 days" | "3 days ago" | "today"
+  if (!asLabel) return rel; // "in 3 days" | "3 days ago" | "today"
 
   if (diffDays === 0) return todayLabel ?? `${verbPast} today`;
   return diffDays > 0 ? `${verbFuture} ${rel}` : `${verbPast} ${rel}`;

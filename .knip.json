@@ -1,0 +1,28 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "apps/frontend/app/**/page.tsx",
+    "apps/frontend/app/**/layout.tsx",
+    "apps/frontend/app/**/template.tsx",
+    "apps/frontend/app/**/route.ts",
+    "apps/frontend/app/**/api/**/*.ts",
+    "apps/backend/src/index.ts"
+  ],
+  "project": [
+    "apps/frontend/**/*.{ts,tsx}",
+    "apps/backend/**/*.{ts,tsx}",
+    "packages/shared/**/*.{ts,tsx}"
+  ],
+  "ignore": [
+    "apps/frontend/components/**/index.ts",
+    "apps/frontend/components/**/index.tsx",
+    "apps/frontend/**/__tests__/**",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}"
+  ],
+  "ignoreDependencies": [
+    "next",
+    "react",
+    "react-dom"
+  ]
+}

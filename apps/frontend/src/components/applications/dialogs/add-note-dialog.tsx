@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { API_BASE, getToken, parseJson } from "@/lib/http";
+import { createNote } from "@/lib/api/notes";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,20 +33,15 @@ export default function AddNoteDialog({
   const setOpen = onOpenChangeAction ?? setUncontrolledOpen;
 
   const [text, setText] = useState("");
-  const disabled = !text.trim();
+  const [saving, setSaving] = useState(false);
+  const disabled = !text.trim() || saving;
 
   async function submit() {
-    const token = getToken();
     try {
-      const res = await fetch(`${API_BASE}/applications/${app.id}/notes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        credentials: "include",
-        body: JSON.stringify({ text }),
-      });
-      const body = await parseJson<any>(res);
+      setSaving(true);
+      const { res, body } = await createNote(app.id, { content: text.trim() });
       if (!res.ok) {
-        toast.error(body?.message ?? "Failed to add note");
+        toast.error((body as any)?.message ?? "Failed to add note");
         return;
       }
       toast.success("Note added");
@@ -55,11 +50,19 @@ export default function AddNoteDialog({
       onAddedAction();
     } catch {
       toast.error("Network error");
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setText(""); // clear text on close
+      }}
+    >
       {/* IMPORTANT: no default trigger when controlled from outside */}
       <DialogContent>
         <DialogHeader>
@@ -76,7 +79,7 @@ export default function AddNoteDialog({
           onChange={(e) => setText(e.target.value)}
         />
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
             Cancel
           </Button>
           <Button onClick={submit} disabled={disabled}>
