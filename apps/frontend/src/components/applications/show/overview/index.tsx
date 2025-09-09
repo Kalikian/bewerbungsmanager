@@ -21,6 +21,7 @@ import AddAttachmentDialog from "@/components/applications/dialogs/add-attachmen
 import DeleteApplicationAction from "@/components/applications/actions/delete-application-action";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ApplicationSlimOverview({ id }: { id: number }) {
   const router = useRouter();
@@ -31,7 +32,14 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
   const [noteOpen, setNoteOpen] = useState(false);
   const [attOpen, setAttOpen] = useState(false);
 
-  const { items: notesRaw, reload: reloadNotes } = useApplicationNotes(id);
+  // Notes-Hook inkl. edit/remove
+  const {
+    items: notesRaw,
+    reload: reloadNotes,
+    edit: editNote,
+    remove: removeNote,
+  } = useApplicationNotes(id);
+
   const { items: filesRaw, reload: reloadFiles } = useApplicationAttachments(id);
 
   // map backend/shared models -> UI models (no hooks here)
@@ -118,7 +126,25 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
         jobUrl={jobUrl}
       />
 
-      <NotesAndAttachmentsTabs notes={notes} files={files} />
+      {/*  Actions an Tabs durchreichen */}
+      <NotesAndAttachmentsTabs
+        notes={notes}
+        files={files}
+        onEditNoteAction={(noteId, currentText) => {
+          const next = window.prompt("Edit note", currentText ?? "");
+          if (next === null) return; // cancelled
+          const trimmed = next.trim();
+          if (!trimmed) {
+            toast.error("Note cannot be empty");
+            return;
+          }
+          // cast id to number und save
+          editNote(Number(noteId), { content: trimmed });
+        }}
+        onDeleteNoteAction={(noteId) => {
+          removeNote(Number(noteId));
+        }}
+      />
 
       <AddNoteDialog
         app={entity}
