@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getToken } from "@/lib/http";
-import { listAttachments } from "@/lib/api/attachments";
+import { listAttachments } from "@/lib/api/attachment";
 import type { AttachmentRow } from "@shared";
 
 export function useApplicationAttachments(applicationId: number) {

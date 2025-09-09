@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { Application } from "@shared";
-import { uploadAttachment } from "@/lib/api/attachments";
+import { uploadAttachment } from "@/lib/api/attachment";
 import { FileUp, Paperclip, X } from "lucide-react";
 
 export default function AddAttachmentDialog({

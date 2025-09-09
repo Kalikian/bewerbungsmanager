@@ -91,3 +91,11 @@ export function triggerDownload(url: string, filename: string) {
   a.click();
   a.remove();
 }
+
+export function uploadedAtFromAttachment(att: any) {
+  return att?.uploaded_at ?? att?.uploadedAt ?? null;
+}
+export function sizeBytesFromAttachment(att: any) {
+  return att?.size_bytes ?? att?.sizeBytes ?? undefined;
+}
+

@@ -8,6 +8,21 @@ export type UploadAttachmentInput = {
   filenameOverride?: string;
 };
 
+// Prefer the original filename coming from the backend.
+// Fall back through a few common aliases, then to a stable "attachment-{id}".
+export function displayNameFromAttachment(att: any) {
+  return (
+    att?.filename_original ??         // snake_case (DB/API)
+    att?.filenameOriginal ??          // camelCase (falls du in Controller camelizest)
+    att?.original_name ??             // weitere APIs
+    att?.originalName ??
+    att?.originalFilename ??
+    att?.client_filename ??
+    att?.name ??
+    att?.filename ??
+    (att?.id != null ? `attachment-${att.id}` : "attachment")
+  );
+}
 /** GET /applications/:applicationId/attachments */
 export async function listAttachments(applicationId: number) {
   const token = getToken();
@@ -102,4 +117,15 @@ export function triggerDownload(url: string, filename: string) {
   document.body.appendChild(a);
   a.click();
   a.remove();
+}
+
+export function mimeFromAttachment(att: any) {
+  return att?.mime_type ?? att?.mimetype ?? "";
+}
+
+export function uploadedAtFromAttachment(att: any) {
+  return att?.uploaded_at ?? att?.uploadedAt ?? null;
+}
+export function sizeBytesFromAttachment(att: any) {
+  return att?.size_bytes ?? att?.sizeBytes ?? undefined;
 }

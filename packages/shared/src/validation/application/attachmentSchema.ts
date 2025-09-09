@@ -43,6 +43,7 @@ export const createAttachmentSchema = z
     mime_type: z.string().trim().min(1).max(MIME_MAX),
     size_bytes: z.coerce.number().int().nonnegative().max(MAX_UPLOAD_BYTES),
     checksum_sha256: z.string().regex(SHA256_HEX, { message: 'Invalid sha256 hex' }),
+    storage_key: z.string().trim().min(1).max(STORAGE_KEY_MAX),
   })
   .strict();
 
@@ -94,3 +95,21 @@ export const attachmentIdParamSchema = z
   .strict();
 
 export type AttachmentIdParams = z.infer<typeof attachmentIdParamSchema>;
+
+/* ------------------------- (Optional) DTO for API responses ------------------------- */
+/**
+ * Use this if you want to strictly validate what you send back to the client:
+ * dates as ISO strings over the wire.
+ */
+export const attachmentDtoSchema = z.object({
+  id: z.number().int().positive(),
+  application_id: z.number().int().positive(),
+  filename_original: z.string().min(1).max(FILENAME_MAX),
+  mime_type: z.string().min(1).max(MIME_MAX),
+  size_bytes: z.number().int().nonnegative().max(MAX_UPLOAD_BYTES),
+  storage_key: z.string().min(1).max(STORAGE_KEY_MAX),
+  checksum_sha256: z.string().regex(SHA256_HEX),
+  uploaded_at: z.string(),           // ISO string
+  deleted_at: z.string().nullable(), // ISO string or null
+});
+export type AttachmentDTO = z.infer<typeof attachmentDtoSchema>;

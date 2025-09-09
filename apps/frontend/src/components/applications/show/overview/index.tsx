@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
 // pretty, clickable list for attachments
-import { AttachmentList } from "@/components/applications/attachments/attachment-list";
+import  AttachmentList  from "@/components/applications/attachments/attachment-list";
 export default function ApplicationSlimOverview({ id }: { id: number }) {
   const router = useRouter();
 
