@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { API_BASE, getToken, parseJson } from "@/lib/http";
+import { getToken } from "@/lib/http";
+import { listAttachments } from "@/lib/api/attachments";
 import type { AttachmentRow } from "@shared";
 
 export function useApplicationAttachments(applicationId: number) {
@@ -16,16 +17,14 @@ export function useApplicationAttachments(applicationId: number) {
       setLoading(false);
       return;
     }
+
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/applications/${applicationId}/attachments`, {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      });
-      const body = await parseJson<AttachmentRow[]>(res);
+      const { res, body } = await listAttachments(applicationId);
       if (!res.ok) throw body as any;
+      // Be defensive: ensure we always store an array
       setItems(Array.isArray(body) ? body : []);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       toast.error("Failed to load attachments");
       setItems([]);
@@ -33,10 +32,10 @@ export function useApplicationAttachments(applicationId: number) {
       setLoading(false);
     }
   }, [applicationId]);
-
+  // Load on mount and whenever applicationId changes
   useEffect(() => {
     load();
   }, [load]);
-
+  // Expose current items, loading state, and a manual reload
   return { items, loading, reload: load, setItems } as const;
 }

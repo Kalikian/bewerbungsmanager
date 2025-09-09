@@ -1,4 +1,3 @@
-// apps/frontend/components/applications/show/overview/index.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -14,7 +13,7 @@ import SlimHeader from "./slim-header";
 import InfoChipsWithApplied from "./info-chips-with-applied";
 import SingleColumnDetails from "./single-column-details";
 import NotesAndAttachmentsTabs from "./notes-and-attachments-tabs";
-import type { NoteItem, FileItem } from "./notes-and-attachments-tabs";
+import type { NoteItem } from "./notes-and-attachments-tabs";
 
 import AddNoteDialog from "@/components/applications/dialogs/add-note-dialog";
 import AddAttachmentDialog from "@/components/applications/dialogs/add-attachment-dialog";
@@ -22,6 +21,8 @@ import DeleteApplicationAction from "@/components/applications/actions/delete-ap
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
+// pretty, clickable list for attachments
+import { AttachmentList } from "@/components/applications/attachments/attachment-list";
 export default function ApplicationSlimOverview({ id }: { id: number }) {
   const router = useRouter();
 
@@ -39,7 +40,8 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
     remove: removeNote,
   } = useApplicationNotes(id);
 
-  const { items: filesRaw, reload: reloadFiles } = useApplicationAttachments(id);
+  // Attachments hook (returns AttachmentRow[] from backend)
+  const { items: attachments, reload: reloadFiles } = useApplicationAttachments(id);
 
   // editing state for reusing AddNoteDialog as edit dialog
   const [editing, setEditing] = useState<{ id: number; text: string } | null>(null);
@@ -55,12 +57,6 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
     id: n.id,
     created_at: toIso(n.created_at),
     text: n.text ?? n.content ?? "",
-  }));
-
-  const files: FileItem[] = (filesRaw ?? []).map((f: any) => ({
-    id: f.id,
-    name: f.name ?? f.filename ?? f.original_name ?? `file-${f.id}`,
-    size_bytes: f.size_bytes ?? f.size ?? undefined,
   }));
 
   // after all hooks are called, you can return early
@@ -127,10 +123,11 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
         jobUrl={jobUrl}
       />
 
-      {/* Actions in Tabs durchreichen */}
+      {/* Tabs: provide pretty AttachmentList via slot/override */}
       <NotesAndAttachmentsTabs
         notes={notes}
-        files={files}
+        filesCount={attachments?.length ?? 0} // show the count in the tab label
+        attachmentsSlot={<AttachmentList items={attachments} onDeletedAction={reloadFiles} />}
         onEditNoteAction={(noteId, currentText) => {
           setEditing({ id: Number(noteId), text: currentText ?? "" });
         }}
@@ -150,7 +147,7 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
         }}
       />
 
-      {/* EDIT note dialog (gleicher Dialog) */}
+      {/* EDIT note dialog (same component) */}
       {editing && (
         <AddNoteDialog
           app={entity}
@@ -172,7 +169,7 @@ export default function ApplicationSlimOverview({ id }: { id: number }) {
         />
       )}
 
-      {/* ATTACHMENT dialog – nutzt attOpen + reloadFiles */}
+      {/* ATTACHMENT dialog – closes + reloads the list on success */}
       <AddAttachmentDialog
         app={entity}
         open={attOpen}

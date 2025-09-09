@@ -65,7 +65,6 @@ export default function AddNoteDialog({
           toast.error("Failed to save note");
           return;
         }
-        toast.success("Note updated");
       } else {
         // Default → CREATE flow
         const { res, body } = await createNote(app.id, { text: payload });

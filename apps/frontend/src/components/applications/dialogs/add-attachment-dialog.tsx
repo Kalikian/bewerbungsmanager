@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { API_BASE, getToken, parseJson } from "@/lib/http";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { Application } from "@shared";
+import { uploadAttachment } from "@/lib/api/attachments";
+import { FileUp, Paperclip, X } from "lucide-react";
 
 export default function AddAttachmentDialog({
   app,
@@ -30,36 +31,59 @@ export default function AddAttachmentDialog({
   const open = controlledOpen ?? uncontrolledOpen;
   const setOpen = onOpenChangeAction ?? setUncontrolledOpen;
 
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   const [file, setFile] = useState<File | null>(null);
   const [desc, setDesc] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // Generate a preview URL for the selected file so the name is clickable
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!file) {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  const inputId = useMemo(() => `file-input-${app.id}`, [app.id]);
+
+  function clearSelection() {
+    setFile(null);
+    if (inputRef.current) inputRef.current.value = ""; // reset native input
+  }
+
   async function submit() {
     if (!file) return;
-    const token = getToken();
-    const fd = new FormData();
-    fd.append("file", file);
-    if (desc.trim()) fd.append("description", desc.trim());
 
     try {
       setBusy(true);
-      const res = await fetch(`${API_BASE}/applications/${app.id}/attachments`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-        body: fd,
+
+      // Use centralized API helper
+      const { res, body } = await uploadAttachment(app.id, {
+        file,
+        // use the API helper's field name (here: "note")
+        note: desc.trim() || undefined,
       });
-      const body = await parseJson<any>(res);
+
       if (!res.ok) {
-        toast.error(body?.message ?? "Failed to upload attachment");
+        toast.error((body as any)?.message ?? "Failed to upload attachment");
         return;
       }
+
       toast.success("Attachment uploaded");
-      setOpen(false); // close dialog
-      setFile(null);
+
+      // Close & reset
+      setOpen(false);
       setDesc("");
+      clearSelection();
       onAddedAction();
-    } catch {
+    } catch (e) {
+      console.error(e);
       toast.error("Network error");
     } finally {
       setBusy(false);
@@ -70,10 +94,10 @@ export default function AddAttachmentDialog({
     <Dialog
       open={open}
       onOpenChange={(o) => {
+        // Prevent closing while uploading
         if (!busy) setOpen(o);
       }}
     >
-      {/* IMPORTANT: no default trigger when controlled from outside */}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add attachment · {app.job_title}</DialogTitle>
@@ -83,8 +107,61 @@ export default function AddAttachmentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3">
-          <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <div className="space-y-4">
+          {/* Hidden native file input to avoid browser default UI text */}
+          <input
+            ref={inputRef}
+            id={inputId}
+            type="file"
+            className="sr-only"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            // add accept="image/*,.pdf" if you want to restrict types
+          />
+
+          {/* Custom, clear, clickable trigger */}
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="shrink-0"
+              onClick={() => inputRef.current?.click()}
+            >
+              <FileUp className="mr-2 h-4 w-4" />
+              Add attachment
+            </Button>
+
+            {/* When a file is selected, show a pretty, clickable chip with name + size */}
+            {file && (
+              <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm">
+                <Paperclip className="h-4 w-4" />
+                {previewUrl ? (
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline underline-offset-2 hover:no-underline"
+                    title="Open selected file"
+                  >
+                    {file.name}
+                  </a>
+                ) : (
+                  <span>{file.name}</span>
+                )}
+                <span className="opacity-70">{(file.size / 1024).toFixed(1)} KB</span>
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  className="ml-1 rounded p-1 hover:bg-muted"
+                  aria-label="Remove selected file"
+                  title="Remove selected file"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
+
           <Textarea
             rows={4}
             placeholder="Optional description…"
