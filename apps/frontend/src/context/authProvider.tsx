@@ -30,7 +30,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const me = await getAccount();
       setUser(me);
     } catch {
-      clearToken();
       setUser(null);
     } finally {
       setLoading(false);

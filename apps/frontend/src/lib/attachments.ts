@@ -98,4 +98,3 @@ export function uploadedAtFromAttachment(att: any) {
 export function sizeBytesFromAttachment(att: any) {
   return att?.size_bytes ?? att?.sizeBytes ?? undefined;
 }
-

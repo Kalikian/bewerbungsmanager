@@ -55,7 +55,7 @@ export async function http<T = unknown>(path: string, init: RequestInit = {}): P
   const token = getToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(`${base}${path}`, { ...init, headers, credentials: "include" });
+  const res = await fetch(url, { ...init, headers, credentials: "include" });
   const isJson = res.headers.get("content-type")?.includes("application/json");
 
   if (!res.ok) {
@@ -68,7 +68,9 @@ export async function http<T = unknown>(path: string, init: RequestInit = {}): P
     }
 
     // If unauthorized, clear token (session is no longer valid)
-    if (res.status === 401) clearToken();
+    if (res.status === 401 && token && token === getToken()) {
+      clearToken();
+    }
 
     // Prefer backend message fields commonly used in APIs
     const message =

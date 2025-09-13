@@ -113,9 +113,9 @@ body {
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --border: oklch(0.90 0.004 286.32);
+  --border: oklch(0.9 0.004 286.32);
 
-  --input: oklch(0.90 0.004 286.32);
+  --input: oklch(0.9 0.004 286.32);
 
   --ring: oklch(0.705 0.015 286.067);
 

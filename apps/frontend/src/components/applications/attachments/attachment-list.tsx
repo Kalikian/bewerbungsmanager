@@ -131,9 +131,7 @@ function AttachmentItem({ att, onDeleted }: { att: AttachmentRow; onDeleted?: ()
             </button>
 
             {(att as any).description && (
-              <p className="mt-2 text-sm text-muted-foreground">
-                {(att as any).description}
-              </p>
+              <p className="mt-2 text-sm text-muted-foreground">{(att as any).description}</p>
             )}
 
             <div className="mt-3 flex flex-wrap gap-2">

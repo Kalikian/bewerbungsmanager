@@ -12,9 +12,9 @@ export type UploadAttachmentInput = {
 // Fall back through a few common aliases, then to a stable "attachment-{id}".
 export function displayNameFromAttachment(att: any) {
   return (
-    att?.filename_original ??         // snake_case (DB/API)
-    att?.filenameOriginal ??          // camelCase (falls du in Controller camelizest)
-    att?.original_name ??             // weitere APIs
+    att?.filename_original ?? // snake_case (DB/API)
+    att?.filenameOriginal ?? // camelCase (falls du in Controller camelizest)
+    att?.original_name ?? // weitere APIs
     att?.originalName ??
     att?.originalFilename ??
     att?.client_filename ??
