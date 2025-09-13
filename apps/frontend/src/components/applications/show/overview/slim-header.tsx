@@ -27,8 +27,8 @@ export default function SlimHeader({
   return (
     <div className="w-full border-b bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          {/* left side: title · company + inline status */}
+        <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          {/* Titel */}
           <div className="min-w-0">
             <h1 className="truncate text-lg font-semibold leading-tight">
               {title}
@@ -42,7 +42,7 @@ export default function SlimHeader({
           </div>
 
           {/* right side: only actions */}
-          <div className="flex flex-wrap items-center justify-end gap-2">
+          <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2">
             <div className="order-1 shrink-0">
               {onEditAction && (
                 <TooltipProvider>
@@ -62,7 +62,7 @@ export default function SlimHeader({
                 </TooltipProvider>
               )}
             </div>
-            <div className="order-3 w-full sm:order-2 sm:w-auto flex justify-end gap-2">
+            <div className="order-3 basis-full md:order-2 md:basis-auto flex justify-end gap-2">
               {onAddNoteAction && (
                 <TooltipProvider>
                   <Tooltip>
@@ -99,7 +99,7 @@ export default function SlimHeader({
               )}
             </div>
             {/* Delete comes in ready*/}
-            <div className="order-2 sm:order-3 shrink-0">{deleteAction}</div>
+            <div className="order-2 md:order-3 shrink-0">{deleteAction}</div>
           </div>
         </div>
       </div>
