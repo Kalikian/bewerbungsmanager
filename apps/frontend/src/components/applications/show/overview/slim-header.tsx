@@ -2,10 +2,11 @@
 "use client";
 
 import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Pencil, FilePlus, FileUp } from "lucide-react";
+import { StatusBadge } from "@/components/ui/status-badge";
+import type { ApplicationStatus } from "@shared";
 
 export default function SlimHeader({
   title,
@@ -18,7 +19,7 @@ export default function SlimHeader({
 }: {
   title: string;
   company?: string;
-  status?: string;
+  status?: ApplicationStatus;
   onEditAction?: () => void;
   onAddNoteAction?: () => void;
   onAddAttachmentAction?: () => void;
@@ -27,21 +28,28 @@ export default function SlimHeader({
   return (
     <div className="w-full border-b bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-3">
-        <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-          {/* Titel */}
+        {/* On large screens use 3 columns: [title] [status] [actions].
+           This keeps the status always visible and avoids truncation by long company names. */}
+        <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+          {/* Title / Company — min-w-0 enables text truncation (ellipsis) inside grids */}
           <div className="min-w-0">
             <h1 className="truncate text-lg font-semibold leading-tight">
               {title}
               {company ? <span className="text-muted-foreground"> · {company}</span> : null}
-              {status ? (
-                <Badge variant="secondary" className="ml-2 align-middle">
-                  {status}
-                </Badge>
-              ) : null}
             </h1>
           </div>
 
-          {/* right side: only actions */}
+          {/* Status — separated cell so it never gets truncated by the title/company */}
+          {status ? (
+            <div className="lg:justify-self-start">
+              <StatusBadge status={status} size="md" className="shrink-0" />
+            </div>
+          ) : (
+            // Keep grid structure consistent when no status is provided
+            <div className="hidden lg:block" />
+          )}
+
+          {/* Right side: only actions */}
           <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2">
             <div className="order-1 shrink-0">
               {onEditAction && (
@@ -62,6 +70,7 @@ export default function SlimHeader({
                 </TooltipProvider>
               )}
             </div>
+
             <div className="order-3 basis-full md:order-2 md:basis-auto flex justify-end gap-2">
               {onAddNoteAction && (
                 <TooltipProvider>
@@ -98,7 +107,8 @@ export default function SlimHeader({
                 </TooltipProvider>
               )}
             </div>
-            {/* Delete comes in ready*/}
+
+            {/* Delete comes in ready */}
             <div className="order-2 md:order-3 shrink-0">{deleteAction}</div>
           </div>
         </div>
