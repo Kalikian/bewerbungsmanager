@@ -17,7 +17,7 @@ export default function ApplicationsPage() {
   }, [router]);
 
   return (
-    <main id="main" className="mx-auto max-w-7xl px-6 py-8">
+    <main id="main" className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-start justify-between gap-4">
         <PageHeader title="Applications" description="Create and manage your job applications" />
         <div className="pt-2">
