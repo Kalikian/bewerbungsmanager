@@ -55,9 +55,9 @@ export default function StatusCell({ id, value, onChangedAction }: Props) {
   return (
     // current: ApplicationStatus, update: (v: ApplicationStatus) => void
 <Select value={current} onValueChange={(v) => update(v as ApplicationStatus)}>
-  <SelectTrigger className="h-7 w-[120px] px-2">
+  <SelectTrigger className="h-7 w-[128px] pl-2 pr-8">
     {/* Shows the colored pill instead of plain text */}
-    <StatusBadge status={current} size="sm" className="w-full justify-center" />
+    <StatusBadge status={current} size="sm" className="max-w-full justify-center" />
   </SelectTrigger>
 
   <SelectContent>
