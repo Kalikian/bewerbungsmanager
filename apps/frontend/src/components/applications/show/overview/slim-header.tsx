@@ -28,28 +28,26 @@ export default function SlimHeader({
   return (
     <div className="w-full border-b bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-3">
-        {/* On large screens use 3 columns: [title] [status] [actions].
-           This keeps the status always visible and avoids truncation by long company names. */}
-        <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
-          {/* Title / Company — min-w-0 enables text truncation (ellipsis) inside grids */}
+        {/* 2 columns on large screens: [title(+status)] [actions] */}
+        <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          {/* Left: title/company and the status badge kept left-aligned */}
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold leading-tight">
-              {title}
-              {company ? <span className="text-muted-foreground"> · {company}</span> : null}
-            </h1>
+            {/* Flex keeps the badge visible (shrink-0) while the title can truncate */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* min-w-0 enables truncation inside grid/flex containers */}
+              <h1 className="min-w-0 truncate text-lg font-semibold leading-tight">
+                {title}
+                {company ? <span className="text-muted-foreground"> · {company}</span> : null}
+              </h1>
+
+              {/* Status left-aligned, with small spacing; never truncated */}
+              {status ? (
+                <StatusBadge status={status} size="md" className="shrink-0 ml-1" />
+              ) : null}
+            </div>
           </div>
 
-          {/* Status — separated cell so it never gets truncated by the title/company */}
-          {status ? (
-            <div className="lg:justify-self-start">
-              <StatusBadge status={status} size="md" className="shrink-0" />
-            </div>
-          ) : (
-            // Keep grid structure consistent when no status is provided
-            <div className="hidden lg:block" />
-          )}
-
-          {/* Right side: only actions */}
+          {/* Right side: actions (unchanged) */}
           <div className="flex flex-wrap md:flex-nowrap items-center justify-end gap-2">
             <div className="order-1 shrink-0">
               {onEditAction && (
