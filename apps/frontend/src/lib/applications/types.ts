@@ -81,4 +81,8 @@ export function sortApplications(list: Application[]): Application[] {
   return [...head, ...tail];
 }
 
+export function sortApplicationsByApplied(list: Application[]): Application[] {
+  return [...list].sort((a, b) => toTs(b.applied_date) - toTs(a.applied_date));
+}
+
 export { STATUSES };
