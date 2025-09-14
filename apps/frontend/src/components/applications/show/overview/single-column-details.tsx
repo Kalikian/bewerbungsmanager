@@ -112,15 +112,21 @@ export default function SingleColumnDetails({
         {/* Job link */}
         {jobUrl && (
           <Row label="Job link">
+            {/* 
+              Make long URLs wrap on small screens:
+              - min-w-0 on the anchor so it can shrink within the grid cell
+              - break-all on the text span to allow breaking very long URLs
+              - shrink-0 on icons so they don't compress
+            */}
             <a
               href={jobUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 underline-offset-2 hover:underline"
+              className="inline-flex max-w-full min-w-0 items-center gap-2 leading-tight underline-offset-2 hover:underline"
             >
-              <LinkIcon className="h-4 w-4" />
-              <span className="truncate">{jobUrl}</span>
-              <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+              <LinkIcon className="h-4 w-4 shrink-0" />
+              <span className="min-w-0 break-all">{jobUrl}</span>
+              <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-70" />
             </a>
           </Row>
         )}
