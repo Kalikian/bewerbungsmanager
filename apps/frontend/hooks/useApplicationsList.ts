@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { API_BASE, getToken, parseJson } from "@/lib/http";
 import { Application } from "@shared";
@@ -9,6 +9,7 @@ import { sortApplicationsByApplied } from "@/lib/applications/types";
 export function useApplicationsList() {
   const [items, _setItems] = useState<Application[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const inFlightRef = useRef(false); 
 
     const setItems = useCallback(
     (updater: React.SetStateAction<Application[] | null>) => {
@@ -23,15 +24,22 @@ export function useApplicationsList() {
     [],
   );
 
-  const load = useCallback(async () => {
+    const load = useCallback(async (opts?: { silent?: boolean }) => {
+    const silent = !!opts?.silent;
+
+    if (inFlightRef.current) return; // Guard
+    inFlightRef.current = true;
+
     const token = getToken();
     if (!token) {
       _setItems([]);
-      setLoading(false);
+      if (!silent) setLoading(false);
+      inFlightRef.current = false;
       return;
     }
+
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const res = await fetch(`${API_BASE}/applications`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
@@ -48,19 +56,38 @@ export function useApplicationsList() {
       toast.error("Failed to load applications");
       _setItems([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
+      inFlightRef.current = false;
     }
   }, []);
 
+  // Initial-Load (mit Skeleton)
   useEffect(() => {
     load();
   }, [load]);
 
+  // Globale Reload-Trigger (silent, ohne Skeleton)
   useEffect(() => {
-    const handler = () => load();
-    window.addEventListener("applications:changed", handler);
-    return () => window.removeEventListener("applications:changed", handler);
+    const onChanged = () => load({ silent: true });
+    const onFocus = () => load({ silent: true });
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load({ silent: true });
+    };
+    const onOnline = () => load({ silent: true });
+
+    window.addEventListener("applications:changed", onChanged);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("online", onOnline);
+
+    return () => {
+      window.removeEventListener("applications:changed", onChanged);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("online", onOnline);
+    };
   }, [load]);
 
+  // reload bleibt wie gehabt nutzbar (zeigt Skeleton)
   return { items, loading, reload: load, setItems };
 }

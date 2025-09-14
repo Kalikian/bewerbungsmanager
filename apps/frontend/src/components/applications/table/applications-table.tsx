@@ -120,9 +120,6 @@ export default function ApplicationsTable() {
         <CardContent className="p-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">No applications yet.</p>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={reload}>
-              Refresh
-            </Button>
             <Button size="sm" asChild>
               <Link href="/applications/new/">New application</Link>
             </Button>
@@ -133,13 +130,8 @@ export default function ApplicationsTable() {
   }
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-sm w-full">
       <CardContent className="p-0 overflow-x-auto">{table}</CardContent>
-      <CardContent className="p-4 border-t flex items-center justify-end">
-        <Button variant="outline" size="sm" onClick={reload}>
-          Refresh
-        </Button>
-      </CardContent>
     </Card>
   );
 }
