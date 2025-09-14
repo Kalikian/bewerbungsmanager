@@ -9,22 +9,19 @@ import { sortApplicationsByApplied } from "@/lib/applications/types";
 export function useApplicationsList() {
   const [items, _setItems] = useState<Application[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const inFlightRef = useRef(false); 
+  const inFlightRef = useRef(false);
 
-    const setItems = useCallback(
-    (updater: React.SetStateAction<Application[] | null>) => {
-      _setItems((prev) => {
-        const next =
-          typeof updater === "function"
-            ? (updater as (p: Application[] | null) => Application[] | null)(prev)
-            : updater;
-        return next ? sortApplicationsByApplied(next) : next;
-      });
-    },
-    [],
-  );
+  const setItems = useCallback((updater: React.SetStateAction<Application[] | null>) => {
+    _setItems((prev) => {
+      const next =
+        typeof updater === "function"
+          ? (updater as (p: Application[] | null) => Application[] | null)(prev)
+          : updater;
+      return next ? sortApplicationsByApplied(next) : next;
+    });
+  }, []);
 
-    const load = useCallback(async (opts?: { silent?: boolean }) => {
+  const load = useCallback(async (opts?: { silent?: boolean }) => {
     const silent = !!opts?.silent;
 
     if (inFlightRef.current) return; // Guard

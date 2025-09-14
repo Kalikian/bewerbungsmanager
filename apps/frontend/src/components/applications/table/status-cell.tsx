@@ -9,8 +9,10 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
+import type { ApplicationStatus } from "@shared";
+import { STATUS_META } from "@/lib/status";
+import { StatusBadge, StatusDot } from "@/components/ui/status-badge";
 
 type Props = {
   id: number;
@@ -51,17 +53,23 @@ export default function StatusCell({ id, value, onChangedAction }: Props) {
   }
 
   return (
-    <Select value={current} onValueChange={(v) => update(v as any)}>
-      <SelectTrigger className="h-7 w-[110px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {STATUSES.map((s) => (
-          <SelectItem key={s} value={s}>
-            {s}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    // current: ApplicationStatus, update: (v: ApplicationStatus) => void
+<Select value={current} onValueChange={(v) => update(v as ApplicationStatus)}>
+  <SelectTrigger className="h-7 w-[120px] px-2">
+    {/* Shows the colored pill instead of plain text */}
+    <StatusBadge status={current} size="sm" className="w-full justify-center" />
+  </SelectTrigger>
+
+  <SelectContent>
+    {STATUSES.map((s) => (
+      <SelectItem key={s} value={s} className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <StatusDot status={s as ApplicationStatus} />
+          <span>{STATUS_META[s as ApplicationStatus].label}</span>
+        </div>
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
   );
 }
