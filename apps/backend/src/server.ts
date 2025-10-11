@@ -4,8 +4,11 @@ import pool from './db/db.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
 
-const server: Server = app.listen(PORT, () => {
-  console.log(`Bewerbungsmanager läuft auf Port ${PORT}`);
+// bind to 0.0.0.0 so PaaS (Render) can reach the server
+const HOST = process.env.HOST ?? "0.0.0.0"; // listen on all interfaces
+
+const server: Server = app.listen(PORT, HOST, () => {
+  console.log(`Bewerbungsmanager läuft auf http://${HOST}:${PORT}`);
 });
 
 // Graceful shutdown on SIGINT (Ctrl+C)
