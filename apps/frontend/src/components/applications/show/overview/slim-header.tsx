@@ -37,7 +37,7 @@ export default function SlimHeader({
               {/* min-w-0 enables truncation inside grid/flex containers */}
               <h1 className="min-w-0 truncate text-lg font-semibold leading-tight">
                 {title}
-                {company ? <span className="text-muted-foreground"> · {company}</span> : null}
+                {company ? <span className="text-muted-foreground"> at {company}</span> : null}
               </h1>
 
               {/* Status left-aligned, with small spacing; never truncated */}
