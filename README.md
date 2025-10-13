@@ -4,9 +4,12 @@ Personal app to track job applications. Monorepo with **Frontend (Next.js/React)
 
 ## 🎥 Demo Preview
 
-*(Short demo of the web app showing registration, login, dashboard, and application management features.)*
+*(Short demo of the web app showing dashboard, and application management features.)*
 
 ![Bewerbungsmanager Demo](./docs/demo.gif)
+
+> 🎬 **Watch full demo video on YouTube:**  
+> [Bewerbungsmanager – Full-Stack Web Application Demo](https://www.youtube.com/watch?v=zzHbA31GbZU)
 
 > *(All data shown in the demo are anonymized.)*
 
