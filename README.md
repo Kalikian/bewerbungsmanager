@@ -2,6 +2,14 @@
 
 Personal app to track job applications. Monorepo with **Frontend (Next.js/React)**, **Backend (TypeScript/Express/PostgreSQL)** and **shared Zod validation**. Backend uses **plain SQL in the model layer**, with **Drizzle Kit** only for schema & migrations (no ORM). API documented via **Swagger-UI**.
 
+## 🎥 Demo Preview
+
+*(Short demo of the web app showing registration, login, dashboard, and application management features.)*
+
+![Bewerbungsmanager Demo](./docs/demo.gif)
+
+> *(All data shown in the demo are anonymized.)*
+
 ## Features
 
 - **Auth (JWT)**: register & login, protected routes
