@@ -64,8 +64,18 @@ export default function ApplicationsTable() {
               aria-label={`Open ${a.job_title ?? "application"} at ${a.company ?? ""}`}
             >
               <TableCell className="text-muted-foreground tabular-nums">{idx + 1}</TableCell>
-              <TableCell className="font-medium truncate">{a.job_title ?? "—"}</TableCell>
-              <TableCell>{a.company ?? "—"}</TableCell>
+              <TableCell className="font-medium">
+                <span className="block max-w-[260px] truncate" title={a.job_title ?? ""}>
+                  {a.job_title ?? "—"}
+                </span>
+              </TableCell>
+
+              <TableCell>
+                <span className="block max-w-[240px] truncate" title={a.company ?? ""}>
+                  {a.company ?? "—"}
+                </span>
+              </TableCell>
+
               <TableCell onClick={stop} onKeyDown={stop}>
                 <StatusCell
                   id={a.id}

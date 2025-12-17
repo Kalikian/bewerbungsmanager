@@ -39,7 +39,7 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
     const userId = await userModel.loginUser({ email, password });
 
     // Generate JWT token (keep payload minimal to avoid leaking data)
-    const token = jwt.sign({ id: userId, email }, SECRET_KEY, { expiresIn: '2h' });
+    const token = jwt.sign({ id: userId, email }, SECRET_KEY, { expiresIn: '24h' });
 
     res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
