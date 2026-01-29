@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,18 +21,47 @@ import { useApplicationsList } from "@hooks/useApplicationsList";
 import StatusCell from "./status-cell";
 import ApplicationRowActions from "./application-row-actions";
 import Link from "next/link";
+import Pagination from "@/components/ui/pagination";
 
 function stop(e: React.SyntheticEvent) {
   e.stopPropagation();
 }
 
+const PAGE_SIZE = 10;
+
 export default function ApplicationsTable() {
   const { items, loading, reload, setItems } = useApplicationsList();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const hasData = !!items && items.length > 0;
+
+  // Read current page from URL (?page=2)
+  const currentPage = useMemo(() => {
+    const raw = searchParams.get("page");
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+  }, [searchParams]);
+
+  const totalPages = useMemo(() => {
+    const total = items?.length ?? 0;
+    return Math.max(1, Math.ceil(total / PAGE_SIZE));
+  }, [items]);
+
+  // Slice visible items for UI-only pagination
+  const visibleItems = useMemo(() => {
+    if (!items) return [];
+    const safePage = Math.min(currentPage, totalPages);
+    const start = (safePage - 1) * PAGE_SIZE;
+    return items.slice(start, start + PAGE_SIZE);
+  }, [items, currentPage, totalPages]);
 
   const table = useMemo(() => {
     if (!items) return null;
+
+    const safePage = Math.min(currentPage, totalPages);
+    const startIndex = (safePage - 1) * PAGE_SIZE;
+
     return (
       <Table>
         <TableHeader>
@@ -48,7 +77,7 @@ export default function ApplicationsTable() {
         </TableHeader>
 
         <TableBody>
-          {items.map((a, idx) => (
+          {visibleItems.map((a, idx) => (
             <TableRow
               key={a.id}
               role="link"
@@ -63,7 +92,11 @@ export default function ApplicationsTable() {
               }}
               aria-label={`Open ${a.job_title ?? "application"} at ${a.company ?? ""}`}
             >
-              <TableCell className="text-muted-foreground tabular-nums">{idx + 1}</TableCell>
+              {/* Global index across pages (1..N), not only 1..10 */}
+              <TableCell className="text-muted-foreground tabular-nums">
+                {startIndex + idx + 1}
+              </TableCell>
+
               <TableCell className="font-medium">
                 <span className="block max-w-[260px] truncate" title={a.job_title ?? ""}>
                   {a.job_title ?? "—"}
@@ -110,7 +143,7 @@ export default function ApplicationsTable() {
         </TableBody>
       </Table>
     );
-  }, [items, reload, setItems]);
+  }, [items, visibleItems, currentPage, totalPages, router, reload, setItems]);
 
   if (loading) {
     return (
@@ -139,9 +172,20 @@ export default function ApplicationsTable() {
     );
   }
 
+  const safePage = Math.min(currentPage, totalPages);
+
   return (
     <Card className="shadow-sm w-full">
-      <CardContent className="p-0 overflow-x-auto">{table}</CardContent>
+      <CardContent className="p-0 overflow-x-auto">
+        {table}
+        <div className="p-4 border-t">
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            makeHref={(p) => `/applications?page=${p}`}
+          />
+        </div>
+      </CardContent>
     </Card>
   );
 }
