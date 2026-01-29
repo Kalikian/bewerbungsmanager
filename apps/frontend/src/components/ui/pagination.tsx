@@ -128,7 +128,7 @@ function PaginationFirst({ href, disabled }: { href: string; disabled?: boolean 
       aria-disabled={disabled}
       className={cn(
         buttonVariants({ variant: "outline", size: "icon" }),
-        "h-9 w-9",
+        "h-9 w-9 hidden sm:inline-flex",
         disabled && "pointer-events-none opacity-50",
       )}
       href={href}
@@ -146,7 +146,7 @@ function PaginationLast({ href, disabled }: { href: string; disabled?: boolean }
       aria-disabled={disabled}
       className={cn(
         buttonVariants({ variant: "outline", size: "icon" }),
-        "h-9 w-9",
+        "h-9 w-9 hidden sm:inline-flex",
         disabled && "pointer-events-none opacity-50",
       )}
       href={href}
