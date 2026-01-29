@@ -1,8 +1,14 @@
+import * as React from "react";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 function getPageRange(current: number, total: number) {
-  // Always show first/last, and a window around current page.
-  const window = 2; // pages on each side
+  // English comments:
+  // Always show first/last, and a small window around current page.
+  const window = 2;
   const pages = new Set<number>();
 
   pages.add(1);
@@ -15,16 +21,98 @@ function getPageRange(current: number, total: number) {
   const sorted = Array.from(pages).sort((a, b) => a - b);
 
   // Insert ellipses markers as 0
-  const result: Array<number> = [];
+  const result: number[] = [];
   for (let i = 0; i < sorted.length; i++) {
     result.push(sorted[i]);
     if (i < sorted.length - 1 && sorted[i + 1] - sorted[i] > 1) {
-      result.push(0); // ellipsis
+      result.push(0);
     }
   }
   return result;
 }
 
+/* shadcn-like primitives (kept inline for consistency and reuse) */
+function PaginationRoot(props: React.ComponentProps<"nav">) {
+  return <nav aria-label="Pagination" {...props} />;
+}
+
+function PaginationContent(props: React.ComponentProps<"ul">) {
+  return <ul className={cn("flex flex-row items-center gap-1", props.className)} {...props} />;
+}
+
+function PaginationItem(props: React.ComponentProps<"li">) {
+  return <li {...props} />;
+}
+
+function PaginationLink({
+  isActive,
+  className,
+  ...props
+}: React.ComponentProps<typeof Link> & { isActive?: boolean }) {
+  return (
+    <Link
+      aria-current={isActive ? "page" : undefined}
+      className={cn(
+        buttonVariants({ variant: isActive ? "default" : "outline", size: "icon" }),
+        "h-9 w-9",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function PaginationEllipsis() {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        buttonVariants({ variant: "ghost", size: "icon" }),
+        "h-9 w-9 pointer-events-none opacity-60",
+      )}
+    >
+      <MoreHorizontal className="h-4 w-4" />
+    </span>
+  );
+}
+
+function PaginationPrevious({ href, disabled }: { href: string; disabled?: boolean }) {
+  return (
+    <Link
+      aria-disabled={disabled}
+      className={cn(
+        buttonVariants({ variant: "outline", size: "icon" }),
+        "h-9 w-9",
+        disabled && "pointer-events-none opacity-50",
+      )}
+      href={href}
+      title="Previous page"
+    >
+      <ChevronLeft className="h-4 w-4" />
+      <span className="sr-only">Previous</span>
+    </Link>
+  );
+}
+
+function PaginationNext({ href, disabled }: { href: string; disabled?: boolean }) {
+  return (
+    <Link
+      aria-disabled={disabled}
+      className={cn(
+        buttonVariants({ variant: "outline", size: "icon" }),
+        "h-9 w-9",
+        disabled && "pointer-events-none opacity-50",
+      )}
+      href={href}
+      title="Next page"
+    >
+      <ChevronRight className="h-4 w-4" />
+      <span className="sr-only">Next</span>
+    </Link>
+  );
+}
+
+/* Default export = your app-level pagination controller */
 export default function Pagination({
   currentPage,
   totalPages,
@@ -36,43 +124,38 @@ export default function Pagination({
 }) {
   if (totalPages <= 1) return null;
 
-  const range = getPageRange(currentPage, totalPages);
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+  const range = getPageRange(safePage, totalPages);
 
   return (
-    <nav aria-label="Pagination" className="flex items-center gap-2 flex-wrap">
-      <Link
-        aria-disabled={currentPage === 1}
-        className={`px-3 py-1 border rounded ${currentPage === 1 ? "pointer-events-none opacity-50" : ""}`}
-        href={makeHref(Math.max(1, currentPage - 1))}
-      >
-        Prev
-      </Link>
+    <PaginationRoot>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            disabled={safePage === 1}
+            href={makeHref(Math.max(1, safePage - 1))}
+          />
+        </PaginationItem>
 
-      {range.map((p, idx) =>
-        p === 0 ? (
-          <span key={`e-${idx}`} className="px-2 text-muted-foreground">
-            …
-          </span>
-        ) : (
-          <Link
-            key={p}
-            className={`px-3 py-1 border rounded ${p === currentPage ? "font-semibold" : ""}`}
-            href={makeHref(p)}
-          >
-            {p}
-          </Link>
-        ),
-      )}
+        {range.map((p, idx) => (
+          <PaginationItem key={p === 0 ? `e-${idx}` : p}>
+            {p === 0 ? (
+              <PaginationEllipsis />
+            ) : (
+              <PaginationLink href={makeHref(p)} isActive={p === safePage}>
+                {p}
+              </PaginationLink>
+            )}
+          </PaginationItem>
+        ))}
 
-      <Link
-        aria-disabled={currentPage === totalPages}
-        className={`px-3 py-1 border rounded ${
-          currentPage === totalPages ? "pointer-events-none opacity-50" : ""
-        }`}
-        href={makeHref(Math.min(totalPages, currentPage + 1))}
-      >
-        Next
-      </Link>
-    </nav>
+        <PaginationItem>
+          <PaginationNext
+            disabled={safePage === totalPages}
+            href={makeHref(Math.min(totalPages, safePage + 1))}
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </PaginationRoot>
   );
 }
