@@ -22,6 +22,7 @@ import StatusCell from "./status-cell";
 import ApplicationRowActions from "./application-row-actions";
 import Link from "next/link";
 import Pagination from "@/components/ui/pagination";
+import ExportApplicationsPdfButton from "@/components/applications/actions/export-pdf-button";
 
 function stop(e: React.SyntheticEvent) {
   e.stopPropagation();
@@ -55,6 +56,17 @@ export default function ApplicationsTable() {
     const start = (safePage - 1) * PAGE_SIZE;
     return items.slice(start, start + PAGE_SIZE);
   }, [items, currentPage, totalPages]);
+
+  // Build minimal export rows for PDF (export all items, not only current page)
+  const pdfRows = useMemo(
+    () =>
+      (items ?? []).map((a) => ({
+        jobTitle: a.job_title ?? "—",
+        company: a.company ?? "—",
+        appliedAt: fmtDate((a as any).applied_date), // keep formatting consistent with UI
+      })),
+    [items],
+  );
 
   const table = useMemo(() => {
     if (!items) return null;
@@ -178,12 +190,19 @@ export default function ApplicationsTable() {
     <Card className="shadow-sm w-full">
       <CardContent className="p-0 overflow-x-auto">
         {table}
-        <div className="p-4 border-t">
-          <Pagination
-            currentPage={safePage}
-            totalPages={totalPages}
-            makeHref={(p) => `/applications?page=${p}`}
-          />
+        <div className="p-4 border-t flex flex-wrap items-center gap-3">
+          {/* Pagination: on mobile full width + centered, on desktop auto and centered */}
+          <div className="w-full sm:flex-1 sm:w-auto sm:flex sm:justify-center">
+            <Pagination
+              currentPage={safePage}
+              totalPages={totalPages}
+              makeHref={(p) => `/applications?page=${p}`}
+            />
+          </div>
+          {/* Button: on mobile align right, on desktop stay right */}
+          <div className="w-full sm:w-auto flex justify-end">
+            <ExportApplicationsPdfButton rows={pdfRows} disabled={loading} />
+          </div>
         </div>
       </CardContent>
     </Card>
