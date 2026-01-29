@@ -135,7 +135,7 @@ export default function Pagination({
   return (
     <PaginationRoot>
       <PaginationContent>
-        <PaginationItem>
+        <PaginationItem className="mr-2">
           <PaginationPrevious
             disabled={safePage === 1}
             href={makeHref(Math.max(1, safePage - 1))}
@@ -154,7 +154,7 @@ export default function Pagination({
           </PaginationItem>
         ))}
 
-        <PaginationItem>
+        <PaginationItem className="ml-2">
           <PaginationNext
             disabled={safePage === totalPages}
             href={makeHref(Math.min(totalPages, safePage + 1))}
