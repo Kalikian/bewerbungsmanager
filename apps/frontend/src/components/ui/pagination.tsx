@@ -37,7 +37,12 @@ function PaginationRoot(props: React.ComponentProps<"nav">) {
 }
 
 function PaginationContent(props: React.ComponentProps<"ul">) {
-  return <ul className={cn("flex flex-row items-center gap-1", props.className)} {...props} />;
+  return (
+    <ul
+      className={cn("flex w-full items-center justify-center gap-1", props.className)}
+      {...props}
+    />
+  );
 }
 
 function PaginationItem(props: React.ComponentProps<"li">) {
