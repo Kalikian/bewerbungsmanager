@@ -1,7 +1,12 @@
 import * as React from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
-
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  MoreHorizontal,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -117,6 +122,42 @@ function PaginationNext({ href, disabled }: { href: string; disabled?: boolean }
   );
 }
 
+function PaginationFirst({ href, disabled }: { href: string; disabled?: boolean }) {
+  return (
+    <Link
+      aria-disabled={disabled}
+      className={cn(
+        buttonVariants({ variant: "outline", size: "icon" }),
+        "h-9 w-9",
+        disabled && "pointer-events-none opacity-50",
+      )}
+      href={href}
+      title="First page"
+    >
+      <ChevronsLeft className="h-4 w-4" />
+      <span className="sr-only">First</span>
+    </Link>
+  );
+}
+
+function PaginationLast({ href, disabled }: { href: string; disabled?: boolean }) {
+  return (
+    <Link
+      aria-disabled={disabled}
+      className={cn(
+        buttonVariants({ variant: "outline", size: "icon" }),
+        "h-9 w-9",
+        disabled && "pointer-events-none opacity-50",
+      )}
+      href={href}
+      title="Last page"
+    >
+      <ChevronsRight className="h-4 w-4" />
+      <span className="sr-only">Last</span>
+    </Link>
+  );
+}
+
 /* Default export = your app-level pagination controller */
 export default function Pagination({
   currentPage,
@@ -135,7 +176,9 @@ export default function Pagination({
   return (
     <PaginationRoot>
       <PaginationContent>
-        <PaginationItem className="mr-2">
+        {/* First + Prev */}
+        <PaginationItem className="mr-2 flex items-center gap-1">
+          <PaginationFirst disabled={safePage === 1} href={makeHref(1)} />
           <PaginationPrevious
             disabled={safePage === 1}
             href={makeHref(Math.max(1, safePage - 1))}
@@ -153,12 +196,13 @@ export default function Pagination({
             )}
           </PaginationItem>
         ))}
-
-        <PaginationItem className="ml-2">
+        {/* Next + Last */}
+        <PaginationItem className="ml-2 flex items-center gap-1">
           <PaginationNext
             disabled={safePage === totalPages}
             href={makeHref(Math.min(totalPages, safePage + 1))}
           />
+          <PaginationLast disabled={safePage === totalPages} href={makeHref(totalPages)} />
         </PaginationItem>
       </PaginationContent>
     </PaginationRoot>
