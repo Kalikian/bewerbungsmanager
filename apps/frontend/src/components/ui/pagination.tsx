@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 function getPageRange(current: number, total: number) {
-  // English comments:
   // Always show first/last, and a small window around current page.
   const window = 2;
   const pages = new Set<number>();
@@ -158,7 +157,7 @@ function PaginationLast({ href, disabled }: { href: string; disabled?: boolean }
   );
 }
 
-/* Default export = your app-level pagination controller */
+/* Default export = app-level pagination controller */
 export default function Pagination({
   currentPage,
   totalPages,

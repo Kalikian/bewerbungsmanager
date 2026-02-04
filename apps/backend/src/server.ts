@@ -5,7 +5,7 @@ import pool from './db/db.js';
 const PORT = Number(process.env.PORT ?? 3000);
 
 // bind to 0.0.0.0 so PaaS (Render) can reach the server
-const HOST = process.env.HOST ?? "0.0.0.0"; // listen on all interfaces
+const HOST = process.env.HOST ?? '0.0.0.0'; // listen on all interfaces
 
 const server: Server = app.listen(PORT, HOST, () => {
   console.log(`Bewerbungsmanager läuft auf http://${HOST}:${PORT}`);
@@ -33,6 +33,7 @@ process.on('SIGINT', () => {
   });
 
   // Safety net: force exit if something still hangs (timer does not keep event loop alive)
+  // eslint-disable-next-line no-undef
   setTimeout(() => {
     console.warn('Forcing process exit (timeout).');
     process.exit(0);
