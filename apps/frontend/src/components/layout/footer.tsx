@@ -18,10 +18,10 @@ export default function Footer() {
             GitHub
           </a>
           <a href="/privacy" className="text-muted-foreground hover:text-foreground">
-            Privacy
+            Datenschutzerklärung
           </a>
           <a href="/imprint" className="text-muted-foreground hover:text-foreground">
-            Imprint
+            Impressum
           </a>
         </div>
       </div>

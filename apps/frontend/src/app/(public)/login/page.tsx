@@ -123,12 +123,12 @@ export default function LoginPage() {
 
             <div className="text-right">
               {/* Placeholder if you later implement "Forgot Password?" */}
-              <Link
+              {/* <Link
                 href="/forgot-password"
                 className="text-sm underline opacity-80 hover:opacity-100"
               >
                 Forgot password?
-              </Link>
+              </Link> */}
             </div>
           </CardContent>
 
