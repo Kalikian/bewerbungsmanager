@@ -7,24 +7,24 @@ import userRoutes from './routes/user/userRoutes.js';
 import applicationRoutes from './routes/application/applicationRoutes.js';
 import noteRoutes from './routes/application/noteRoutes.js';
 import attachmentRoutes from './routes/application/attachmentRoutes.js';
-import cors, { CorsOptionsDelegate } from "cors";
+import cors, { CorsOptionsDelegate } from 'cors';
 
 const app = express();
 
 // Allow prod origins via ENV + localhost for dev.
 // Put the SAME options on app.use and app.options to satisfy preflight.
-const allowedFromEnv = (process.env.CORS_ORIGIN ?? "")
-  .split(",")
-  .map(s => s.trim())
+const allowedFromEnv = (process.env.CORS_ORIGIN ?? '')
+  .split(',')
+  .map((s) => s.trim())
   .filter(Boolean);
 
 // Dev-Origins (falls du 127.0.0.1 nutzt, ist es auch erlaubt)
 const allowedSet = new Set([
   ...allowedFromEnv,
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:3001",
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
 ]);
 
 /**

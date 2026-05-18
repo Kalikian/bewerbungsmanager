@@ -19,10 +19,13 @@ export default function ApplicationsPage() {
   return (
     <main id="main" className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Applications" description="Create and manage your job applications" />
+        <PageHeader
+          title="Applications"
+          description="Track, organize and manage your software engineering applications"
+        />
         <div className="pt-2">
           <Button asChild>
-            <Link href="/applications/new/">New application</Link>
+            <Link href="/applications/new/">Add Application</Link>
           </Button>
         </div>
       </div>
