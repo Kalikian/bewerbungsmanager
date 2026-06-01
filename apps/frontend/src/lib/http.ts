@@ -8,15 +8,72 @@ export async function parseJson<T = any>(res: Response): Promise<T> {
   return text ? (JSON.parse(text) as T) : ({} as T);
 }
 // Simple token management in localStorage.
-export function getToken() {
+type JwtPayload = {
+  exp?: number;
+};
+
+function notifyAuthChanged() {
+  if (typeof window === "undefined") return;
+
+  window.dispatchEvent(new Event("auth:changed"));
+}
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const payloadPart = token.split(".")[1];
+
+    if (!payloadPart) {
+      return true;
+    }
+
+    // JWT uses base64url, so we normalize it to regular base64
+    const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const paddedBase64 = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+
+    const payload = JSON.parse(window.atob(paddedBase64)) as JwtPayload;
+
+    if (!payload.exp) {
+      return true;
+    }
+
+    // JWT exp is in seconds, Date.now() is in milliseconds
+    return payload.exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
+
+export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return null;
+  }
+
+  if (isTokenExpired(token)) {
+    localStorage.removeItem("token");
+    notifyAuthChanged();
+
+    return null;
+  }
+
+  return token;
 }
+
 export function setToken(t: string) {
+  if (typeof window === "undefined") return;
+
   localStorage.setItem("token", t);
+  notifyAuthChanged();
 }
+
 export function clearToken() {
+  if (typeof window === "undefined") return;
+
   localStorage.removeItem("token");
+  notifyAuthChanged();
 }
 
 /** Rich error for HTTP failures so callers can toast accurate messages. */
