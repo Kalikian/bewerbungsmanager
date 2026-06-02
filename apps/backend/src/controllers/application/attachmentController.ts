@@ -1,4 +1,5 @@
 import type { Express, Request, Response, NextFunction } from 'express';
+import { Buffer } from 'node:buffer';
 
 // Zod schemas
 import {
@@ -11,6 +12,15 @@ import * as attachmentModel from '../../models/application/attachmentModel.js';
 import * as fileSniff from '../../utils/fileSniff.js';
 import * as hash from '../../utils/hash.js';
 import * as storage from '../../utils/storage.js';
+
+function fixMojibakeFileName(fileName: string): string {
+  // Fix wrongly decoded UTF-8 filenames, e.g. "PrÃ¼fung.pdf" -> "Prüfung.pdf"
+  if (/[ÃÂâ]/.test(fileName)) {
+    return Buffer.from(fileName, 'latin1').toString('utf8');
+  }
+
+  return fileName;
+}
 
 export async function uploadAttachment(req: Request, res: Response, next: NextFunction) {
   try {
@@ -36,11 +46,14 @@ export async function uploadAttachment(req: Request, res: Response, next: NextFu
       await storage.writeFileAtomic(abs, file.buffer);
     }
 
+    // Fix filename encoding before storing it in the database
+    const filenameOriginal = fixMojibakeFileName(file.originalname);
+
     // Insert DB row (ownership is validated in SQL)
     const inserted = await attachmentModel.insertAttachment({
       applicationId,
       userId,
-      filenameOriginal: file.originalname,
+      filenameOriginal,
       mimeType: mime,
       sizeBytes: file.size,
       storageKey,
