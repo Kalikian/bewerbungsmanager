@@ -32,46 +32,47 @@ export default function AddAttachmentDialog({
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
 
-  // Generate a preview URL for the selected file so the name is clickable
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // Generate preview URLs for selected files so the names are clickable
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+
   useEffect(() => {
-    if (!file) {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+    const urls = files.map((selectedFile) => URL.createObjectURL(selectedFile));
+    setPreviewUrls(urls);
+
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [files]);
 
   const inputId = useMemo(() => `file-input-${app.id}`, [app.id]);
 
   function clearSelection() {
-    setFile(null);
+    setFiles([]);
     if (inputRef.current) inputRef.current.value = ""; // reset native input
   }
 
   async function submit() {
-    if (!file) return;
+    if (files.length === 0) return;
 
     try {
       setBusy(true);
 
-      // Use centralized API helper
-      const { res, body } = await uploadAttachment(app.id, {
-        file,
-      });
+      // Upload selected files one after another using the existing API helper
+      for (const selectedFile of files) {
+        const { res, body } = await uploadAttachment(app.id, {
+          file: selectedFile,
+        });
 
-      if (!res.ok) {
-        toast.error((body as any)?.message ?? "Failed to upload attachment");
-        return;
+        if (!res.ok) {
+          toast.error((body as any)?.message ?? `Failed to upload ${selectedFile.name}`);
+          return;
+        }
       }
 
-      toast.success("Attachment uploaded");
+      toast.success(files.length === 1 ? "Attachment uploaded" : "Attachments uploaded");
 
       // Close & reset
       setOpen(false);
@@ -99,7 +100,7 @@ export default function AddAttachmentDialog({
             Add attachment · {app.job_title}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Choose a file to attach to this application.
+            Choose files to attach to this application.
           </DialogDescription>
         </DialogHeader>
 
@@ -109,8 +110,12 @@ export default function AddAttachmentDialog({
             ref={inputRef}
             id={inputId}
             type="file"
+            multiple
             className="sr-only"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              const selectedFiles = Array.from(e.currentTarget.files ?? []);
+              setFiles(selectedFiles);
+            }}
             // add accept="image/*,.pdf" if you want to restrict types
           />
 
@@ -127,41 +132,55 @@ export default function AddAttachmentDialog({
               Add attachment
             </Button>
 
-            {file && (
-              <div className="flex w-full items-start gap-2 rounded-lg border px-3 py-2 text-sm">
-                <Paperclip className="mt-0.5 h-4 w-4 shrink-0" />
+            {files.length > 0 && (
+              <div className="space-y-2">
+                {files.map((selectedFile, index) => {
+                  const previewUrl = previewUrls[index];
 
-                <div className="min-w-0 flex-1">
-                  {previewUrl ? (
-                    <a
-                      href={previewUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block break-all underline underline-offset-2 hover:no-underline"
-                      title={file.name}
+                  return (
+                    <div
+                      key={`${selectedFile.name}-${selectedFile.size}-${selectedFile.lastModified}-${index}`}
+                      className="flex w-full items-start gap-2 rounded-lg border px-3 py-2 text-sm"
                     >
-                      {file.name}
-                    </a>
-                  ) : (
-                    <span className="block break-all" title={file.name}>
-                      {file.name}
-                    </span>
-                  )}
+                      <Paperclip className="mt-0.5 h-4 w-4 shrink-0" />
 
-                  <span className="mt-1 block text-xs opacity-70">
-                    {(file.size / 1024).toFixed(1)} KB
-                  </span>
-                </div>
+                      <div className="min-w-0 flex-1">
+                        {previewUrl ? (
+                          <a
+                            href={previewUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block break-all underline underline-offset-2 hover:no-underline"
+                            title={selectedFile.name}
+                          >
+                            {selectedFile.name}
+                          </a>
+                        ) : (
+                          <span className="block break-all" title={selectedFile.name}>
+                            {selectedFile.name}
+                          </span>
+                        )}
 
-                <button
-                  type="button"
-                  onClick={clearSelection}
-                  className="shrink-0 rounded p-1 hover:bg-muted"
-                  aria-label="Remove selected file"
-                  title="Remove selected file"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                        <span className="mt-1 block text-xs opacity-70">
+                          {(selectedFile.size / 1024).toFixed(1)} KB
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFiles((prev) => prev.filter((_, i) => i !== index));
+                          if (inputRef.current) inputRef.current.value = "";
+                        }}
+                        className="shrink-0 rounded p-1 hover:bg-muted"
+                        aria-label="Remove selected file"
+                        title="Remove selected file"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -171,7 +190,7 @@ export default function AddAttachmentDialog({
           <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
             Cancel
           </Button>
-          <Button onClick={submit} disabled={!file || busy}>
+          <Button onClick={submit} disabled={files.length === 0 || busy}>
             {busy ? "Uploading…" : "Upload"}
           </Button>
         </DialogFooter>
