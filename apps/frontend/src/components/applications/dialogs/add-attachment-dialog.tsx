@@ -55,15 +55,25 @@ export default function AddAttachmentDialog({
     if (inputRef.current) inputRef.current.value = ""; // reset native input
   }
 
+  function cleanFileName(fileName: string) {
+    // Remove leading timestamp like 20260601_131032_
+    return fileName.replace(/^\d{8}[_-]\d{6}[_\s-]*/, "");
+  }
+
   async function submit() {
     if (!file) return;
 
     try {
       setBusy(true);
 
+      const cleanedFile = new File([file], cleanFileName(file.name), {
+        type: file.type,
+        lastModified: file.lastModified,
+      });
+
       // Use centralized API helper
       const { res, body } = await uploadAttachment(app.id, {
-        file,
+        file: cleanedFile,
       });
 
       if (!res.ok) {
@@ -84,6 +94,8 @@ export default function AddAttachmentDialog({
       setBusy(false);
     }
   }
+
+  const displayFileName = file ? cleanFileName(file.name) : "";
 
   return (
     <Dialog
@@ -138,13 +150,13 @@ export default function AddAttachmentDialog({
                       target="_blank"
                       rel="noreferrer"
                       className="block break-all underline underline-offset-2 hover:no-underline"
-                      title={file.name}
+                      title={displayFileName}
                     >
-                      {file.name}
+                      {displayFileName}
                     </a>
                   ) : (
-                    <span className="block break-all" title={file.name}>
-                      {file.name}
+                    <span className="block break-all" title={displayFileName}>
+                      {displayFileName}
                     </span>
                   )}
 
