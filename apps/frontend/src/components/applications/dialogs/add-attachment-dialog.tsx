@@ -11,7 +11,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import type { Application } from "@shared";
 import { uploadAttachment } from "@/lib/api/attachment";
 import { FileUp, Paperclip, X } from "lucide-react";
@@ -34,7 +33,6 @@ export default function AddAttachmentDialog({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
-  const [desc, setDesc] = useState("");
   const [busy, setBusy] = useState(false);
 
   // Generate a preview URL for the selected file so the name is clickable
@@ -66,8 +64,6 @@ export default function AddAttachmentDialog({
       // Use centralized API helper
       const { res, body } = await uploadAttachment(app.id, {
         file,
-        // use the API helper's field name (here: "note")
-        note: desc.trim() || undefined,
       });
 
       if (!res.ok) {
@@ -79,7 +75,6 @@ export default function AddAttachmentDialog({
 
       // Close & reset
       setOpen(false);
-      setDesc("");
       clearSelection();
       onAddedAction();
     } catch (e) {
@@ -102,8 +97,7 @@ export default function AddAttachmentDialog({
         <DialogHeader>
           <DialogTitle>Add attachment · {app.job_title}</DialogTitle>
           <DialogDescription className="sr-only">
-            Choose a file and optionally add a description. The file will be attached to this
-            application.
+            Choose a file to attach to this application.
           </DialogDescription>
         </DialogHeader>
 
@@ -161,13 +155,6 @@ export default function AddAttachmentDialog({
               </div>
             )}
           </div>
-
-          <Textarea
-            rows={4}
-            placeholder="Optional description…"
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-          />
         </div>
 
         <DialogFooter className="gap-2">
