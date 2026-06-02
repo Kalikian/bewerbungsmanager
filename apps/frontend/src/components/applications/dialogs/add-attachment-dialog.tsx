@@ -93,9 +93,11 @@ export default function AddAttachmentDialog({
         if (!busy) setOpen(o);
       }}
     >
-      <DialogContent>
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add attachment · {app.job_title}</DialogTitle>
+          <DialogTitle className="pr-10 whitespace-normal break-words leading-snug">
+            Add attachment · {app.job_title}
+          </DialogTitle>
           <DialogDescription className="sr-only">
             Choose a file to attach to this application.
           </DialogDescription>
@@ -113,40 +115,48 @@ export default function AddAttachmentDialog({
           />
 
           {/* Custom, clear, clickable trigger */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-3">
             <Button
               type="button"
               variant="secondary"
               size="sm"
-              className="shrink-0"
+              className="w-fit shrink-0"
               onClick={() => inputRef.current?.click()}
             >
               <FileUp className="mr-2 h-4 w-4" />
               Add attachment
             </Button>
 
-            {/* When a file is selected, show a pretty, clickable chip with name + size */}
             {file && (
-              <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm">
-                <Paperclip className="h-4 w-4" />
-                {previewUrl ? (
-                  <a
-                    href={previewUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline underline-offset-2 hover:no-underline"
-                    title="Open selected file"
-                  >
-                    {file.name}
-                  </a>
-                ) : (
-                  <span>{file.name}</span>
-                )}
-                <span className="opacity-70">{(file.size / 1024).toFixed(1)} KB</span>
+              <div className="flex w-full items-start gap-2 rounded-lg border px-3 py-2 text-sm">
+                <Paperclip className="mt-0.5 h-4 w-4 shrink-0" />
+
+                <div className="min-w-0 flex-1">
+                  {previewUrl ? (
+                    <a
+                      href={previewUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block break-all underline underline-offset-2 hover:no-underline"
+                      title={file.name}
+                    >
+                      {file.name}
+                    </a>
+                  ) : (
+                    <span className="block break-all" title={file.name}>
+                      {file.name}
+                    </span>
+                  )}
+
+                  <span className="mt-1 block text-xs opacity-70">
+                    {(file.size / 1024).toFixed(1)} KB
+                  </span>
+                </div>
+
                 <button
                   type="button"
                   onClick={clearSelection}
-                  className="ml-1 rounded p-1 hover:bg-muted"
+                  className="shrink-0 rounded p-1 hover:bg-muted"
                   aria-label="Remove selected file"
                   title="Remove selected file"
                 >
